@@ -180,7 +180,7 @@ public class Arena {
 				for (Player p : gameManager.getActivePlayers()) {
 					if (p.getIndex() + 1 == getTileOwner(x,y)) {
 						tooltips.setTooltipText(getTileSprite(x,y), "Castle\nplayer: " 
-										+ String.valueOf(getTileOwner(x,y)) + "\nx: " 
+										+ p.getNicknameToken() + "\nx: " 
 										+ String.valueOf(x) + ", y: " 
 										+ String.valueOf(y) + "\nhealth: " 
 										+ tile_health + "\ngold: "
@@ -199,7 +199,7 @@ public class Arena {
 				if (tempname.equals("RANGED"))   tempname = "Ranged";
 				
 				tooltips.setTooltipText(getTileSprite(x,y), tempname + "\nplayer: "
-										+ String.valueOf(getTileOwner(x,y)) + "\nx: " 
+										+ p.getNicknameToken() + "\nx: " 
 										+ String.valueOf(x) + ", y: " 
 										+ String.valueOf(y) + "\nhealth: " 
 										+ tile_health);	
