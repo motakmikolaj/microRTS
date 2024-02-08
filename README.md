@@ -1,7 +1,5 @@
 # microRTS
 
-## Purpose
-
 The game is available to play on [CodinGame](https://www.codingame.com).
 This contribution was developed as an university thesis.
 
