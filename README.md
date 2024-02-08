@@ -2,16 +2,8 @@
 
 ## Purpose
 
-This project is a game made for university thesis.
+The game is available to play on [CodinGame](https://www.codingame.com).
+This contribution was developed as an university thesis.
 
-It contains a simple 2 player game where both players perform actions simultaneously.
-
-## Build
-
-Clone this project & download the Maven dependencies.
-
-## Run
-
-Launch `src/test/java/Main.java` to launch a local game with `Agent1.java` vs `Agent2.java`
-
-The rules of microRTS are explained in `config/statement_en.html`
+Inspired by [small implementation of an RTS game by Santiago Ontañón](https://github.com/Farama-Foundation/MicroRTS).
+<i>"Santiago Ontañón (2013) The Combinatorial Multi-Armed Bandit Problem and its Application to Real-Time Strategy Games, In AIIDE 2013. pp. 58 - 64"</i>.
