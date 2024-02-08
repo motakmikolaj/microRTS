@@ -1,0 +1,18 @@
+read width:int height:int startGold:int
+loop 6 read entityType:int maxHP:int reach:int attack:int step:int goldCost:int woodCost:int
+
+gameloop
+read N:int
+loop N read x:int y:int owner:int entityType:int health:int
+
+write WAIT
+
+STATEMENT
+This automatically generated code is supposed to help you parse the standard given input.
+Order your units to destroy enemy castles and dominate the arena!
+
+OUTPUT
+Order examples:
+"BUILD 3 4 3 3 BARRACKS;TRAIN 1 1 2 2 WORKER"
+"MOVE 2 3 3 4;HARVEST 0 4 0 5"
+"WAIT"

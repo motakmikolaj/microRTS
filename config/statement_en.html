@@ -1,0 +1,274 @@
+<div id="statement_back" class="statement_back" style="display: none"></div>
+<div class="statement-body">
+  <!-- GOAL -->
+  <div class="statement-section statement-goal">
+	  
+	<div style="color: #7cc576; background-color: rgba(124, 197, 118,.1); padding: 2px;">
+		<div class="statement-rules-content">
+			<p>Real Time Strategy (RTS) is a sub-genre of Strategy games, that are played simultaneously in real time. Which means there is no separation between decision making and active phase and both players play at the same time (they don't alternate).</p>
+			
+			<p>Game is inspired by <a href="https://github.com/Farama-Foundation/MicroRTS">small implementation of an RTS game by Santiago Ontañón</a>.</p>
+			
+			<p>"Santiago Ontañón (2013) The Combinatorial Multi-Armed Bandit Problem and its Application to Real-Time Strategy Games, In AIIDE 2013. pp. 58 - 64".</p>
+			
+			<p>Project's source code can be found <a href="https://www.codingame.com">here</a>.</p>
+		</div>
+    </div>
+    <br>
+        
+        
+    <h1>
+		<span class="icon icon-goal">&nbsp;</span> <span>The Goal</span>
+    </h1>
+    <div class="statement-goal-content">
+		<p>Conquer the arena, by destroying all of the enemy castles.</p>
+    </div>
+    
+    
+  </div>
+
+  <!-- RULES -->
+  <div class="statement-section statement-rules">
+      <h1>
+		  <span class="icon icon-rules">&nbsp;</span>
+          <span>Rules</span>
+      </h1>
+      <div class="statement-rules-content">
+		  <div class="blk">
+			  <div class="text">
+				  <div style="margin-bottom: 10px">
+					  <p>The game is played on a map <var>width</var> tiles wide and <var>height</var> tiles high. Each tile can only be occupied by one entity at the time - entities are defined as non-empty tiles: <b>units</b> and <b>buildings</b> owned by each player, but also <b>neutral tiles</b> like mines or walls.</p>
+					  
+					  <p>At the beginning of each turn players get a list of every entity on the map and information of their <var>x</var> and <var>y</var> position, <var>owner</var> identificator, <var>entityType</var> and <var>health</var>.</p>
+					  
+					  <p>Each player starts with certain amount of <b>resources</b>, that can also be found on the map and need to be <b>harvested</b>. Those resources can be used for creation of different buildings and units.</p>
+
+					  <p><b>Orders</b> given by players have to be written according the rules and order syntax. Incorrect orders will result in immediate elimination of the player. If an order fits the criteria, but it's not possible to be executed, because of external reasons (like different unit blocking the way) - it will fail, without player's elimination. Every entity owned by players has only specific list of the orders it can execute. All actions can be done in all 8 directions. Entity is only limited by the free space, other entities, it's own <var>reach</var> and size of it's <var>step</var>.</p>
+					  
+					  <p>Entities can only <b>move</b> into empty tiles or the tiles that will be emptied the same turn (for example, if occupied by different unit owned by the player, that will also move the same turn). Otherwise the order will fail to be executed, without eliminating the player.</p>
+					  
+					  <p>Entity tiles can be sorted based on their owner and type:</p>
+				  </div>
+			  
+				  <h3 style="font-size: 14px;font-weight: 700;padding-top: 15px;color: #838891;padding-bottom: 15px;">
+					  <span>Neutral tiles</span>
+				  </h3>
+				  <div style="margin-bottom: 10px">
+					  <p>Neutral tiles have owner identificator value equal to <const>-1</const>. There are three types of those entities in this version of the game:</p>
+					  <ul>
+						  <li>
+							  <b>Walls</b> - they are the main physical obstacle in the arena. If not defined differently, they are <b>unbreakable</b>, which means their base health is equal <const>-1</const>.
+						  </li>
+						  <li>
+							  <b>Gold Mines</b> - source of <b>Gold</b>. Their health value defines the amount of resource left to be mined. When depleted - it disappears from the arena.
+						  </li>
+						  <li>
+							  <b>Forests</b> - source of <b>Wood</b>. Their health value defines the amount of resource left to be logged. When depleted - it disappears from the arena.
+						  </li>
+					  </ul>
+				  </div>
+				  
+				  <h3 style="font-size: 14px;font-weight: 700;padding-top: 15px;color: #838891;padding-bottom: 15px;">
+					  <span>Buildings</span>
+				  </h3>
+				  <div style="margin-bottom: 10px">
+					  <p>Buildings are part of player tiles so their <var>owner</var> corresponds to the player's ID (player = <const>0</const>, enemy = <const>1</const>). In this variant of the game they can't <b>move</b> or <b>attack</b>, but they can <b>train</b> units in the range of their <var>reach</var>. Usually much more costly to be built than other entities.</p>
+					  <ul>
+						  <li>
+							  <b>Castles</b> - pivotal building for each player. The player who doesn't have any castles left loses. They can train <b>Workers</b>.
+						  </li>
+						  <li>
+							  <b>Barracks</b> - training ground for more advanced units. Can train units like <b>Light</b>, <b>Heavy</b> and <b>Ranged</b> troops.
+						  </li>
+					  </ul>
+				  </div>
+				  
+				  <h3 style="font-size: 14px;font-weight: 700;padding-top: 15px;color: #838891;padding-bottom: 15px;">
+					  <span>Units</span>
+				  </h3>
+				  <div style="margin-bottom: 10px">
+					  <p>Units are the more dynamic player tiles akin to chess pieces. In this variant of the game all of them can <b>move</b> at the speed of <var>step</var> tiles per turn. They can also do all the given actions in the range of their <var>reach</var>.</p>
+					  <ul>
+						  <li>
+							  <b>Workers</b> - most universal unit. Their main functionality is to <b>build</b> and <b>harvest</b> resources. They can <b>attack</b>, but they aren't very durable, strong or fast, their range is also only limited to one tile in this variant of the game.
+						  </li>
+						  <li>
+							  <b>Light</b> - more advanced combat unit. They are more durable and stronger than regular Workers. Their main characteristic is that they can move two tiles per turn in this variant of the game.
+						  </li>
+						  <li>
+							  <b>Heavy</b> - the tank unit. Strongest and most durable unit in this variant of the game. They are more costly to produce.
+						  </li>
+						  <li>
+							  <b>Ranged</b> - weak, long range unit. Their main characteristic is long attack range of three tiles.
+						  </li>
+					  </ul>
+				  </div>
+				  
+				  <h3 style="font-size: 14px;font-weight: 700;padding-top: 15px;color: #838891;padding-bottom: 15px;">
+					  <span>Game turn</span>
+				  </h3>
+				  <div style="margin-bottom: 10px">
+					  <p>Each turn players sent one line consisting of semi-colon separated orders. Then referee checks their validity and then commits them in priority order of: building > training > moving > harvesting > attacking.</p>
+					  <p>Any movement that can't be done immediately is then pushed to the end of the "move" queue, this repeats until the queue is empty or no more units can move. After "moving" phase any remaining "building" or "training" orders that weren't possible before, will be considered once again.</p>
+					  <p>Conflicting orders are executed in random order, if not possible to be executed at the same time. In case of two units attacking each other - both of them get damaged.</p>
+					  <p>Then referee cleans any defeated entities and depleted resources off the arena and checks, if any of the end conditions are met.</p>
+				  </div>
+			  </div>
+		  </div>
+	  </div>
+  </div>
+
+  <!-- PROTOCOL -->
+  <div class="statement-section statement-protocol">
+    <h2>
+      <span class="icon icon-protocol">&nbsp;</span>
+      <span>Game Input</span>
+    </h2>
+     <!-- Protocol block -->
+    <div class="blk">
+      <div class="title">Initialization input</div>
+      <div class="text">
+		<span class="statement-lineno">First line:</span> 3 integers seperated by a space:
+		<ul>
+			<li><var>width</var> - width of the arena.</li>
+			<li><var>height</var> - height of the arena.</li>
+			<li><var>startGold</var> - the amount of <b>Gold</b> each player gets at the beginning of the game.</li>
+		</ul>
+        <br>
+        <span class="statement-lineno">Next 6 lines:</span> 7 integers seperated by a space defining each player entity type:
+        <ul>
+			<li><var>entityType</var> - numerical value representing entity type.</li>
+			<li><var>maxHP</var> - maximum health entity can have.</li>
+			<li><var>reach</var> - the range in which entity can do all it's actions.</li>
+			<li><var>attack</var> - the amount of damage entity does when attacking.</li>
+			<li><var>step</var> - the amount of tiles entity can move in one turn.</li>
+			<li><var>costGold</var> - the amount of <b>Gold</b> needed to create this entity.</li>
+			<li><var>costWood</var> - the amount of <b>Wood</b> needed to create this entity.</li>
+		</ul>
+        <br>
+      </div>
+    </div>
+    
+    <!-- Protocol block -->
+    <div class="blk">
+      <div class="title">Input for one game turn</div>
+      <div class="text">
+		<span class="statement-lineno">First line:</span> 1 integer <var>N</var>, which represents the number of entities on the arena.
+        <br>
+        <span class="statement-lineno">Next N lines:</span> 5 space-separated integers defining each entity on the arena:
+        <ul>
+			<li><var>x</var> - x position of the entity.</li>
+			<li><var>y</var> - y position of the entity.</li>
+			<li><var>owner</var> - identificator for the owner of the entity:
+				<ul>
+					<li><const>-1:</const> neutral.</li>
+					<li><const>0:</const> player.</li>
+					<li><const>1:</const> enemy.</li>
+				</ul>
+			</li>
+			<li><var>entityType</var> - numerical value representing entity type:
+				<ul>
+					<li>Neutral entities:
+						<ul>
+							<li><const>1:</const> wall.</li>
+							<li><const>2:</const> gold mine.</li>
+							<li><const>3:</const> forest.</li>
+						</ul>
+					</li>
+					<li>Player and enemy entities:
+						<ul>
+							<li><const>0:</const> castle.</li>
+							<li><const>1:</const> barracks.</li>
+							<li><const>2:</const> worker.</li>
+							<li><const>3:</const> light.</li>
+							<li><const>4:</const> heavy.</li>
+							<li><const>5:</const> ranged.</li>
+						</ul>
+					</li>
+				</ul>
+			</li>
+			<li><var>health</var> - entity's remaining health.</li>
+		</ul>
+        <br>
+      </div>
+    </div>
+
+    <!-- Protocol block -->
+    <div class="blk">
+      <div class="title">Output for one game turn</div>
+      <div class="text">
+		  <p>A single line of <strong>orders</strong> separated with semicolons.</p>
+	  </div>
+    </div>
+    
+    <!-- Protocol block -->
+    <div class="blk">
+      <div class="title">Orders</div>
+      <div class="text">
+		  <p>When writing "building" and "training" orders - for target entity type both numerical and string values are acceptable (e.g. "CASTLE" or "0"). Some of the orders include pairs of coordinates: first pair always refers to the ordered entity and the other refers to the target entity or location.</p>
+		  <action>BUILD X Y tX tY [entityType]</action> - orders entity to construct a building at the target.
+		  <br>
+		  <action>TRAIN X Y tX tY [entityType]</action> - orders entity to train an unit at the target.
+		  <br>
+		  <action>MOVE X Y tX tY</action> - moves unit from one point to the other.
+		  <br>
+		  <action>ATTACK X Y tX tY</action> - orders the entity to attack the target.
+		  <br>
+		  <action>HARVEST X Y tX tY</action> - orders the entity to harvest resources at the target.
+		  <br>
+		  <action>WAIT</action> - used when no orders need to be sent out.
+		  <br>
+	  </div>
+	</div>
+	
+	<!-- Protocol block -->
+    <div class="blk">
+      <div class="title">Entities</div>
+      <div class="text">
+		  <p>Each <var>entityType</var> has certain list of orders it can do within it's <var>reach</var>. Each entity can only do one order per turn.</p>
+		  <ul>
+			  <li><b>CASTLE:</b> entityType: <const>0</const>, maxHP: <const>10</const>, reach: <const>3</const>, attack: <const>0</const>, step: <const>0</const>, costGold: <const>5</const>, costWood: <const>5</const>, 
+				<br>
+				<div style="margin-bottom: 10px"><action>TRAIN WORKER</action></div>
+			  </li>
+			  <li><b>BARRACKS:</b> entityType: <const>1</const>, maxHP: <const>4</const>, reach: <const>2</const>, attack: <const>0</const>, step: <const>0</const>, costGold: <const>0</const>, costWood: <const>5</const>, 
+				<br>
+				<div style="margin-bottom: 10px"><action>TRAIN LIGHT</action> <action>TRAIN HEAVY</action> <action>TRAIN RANGED</action></div>
+			  </li>
+			  <li><b>WORKER:</b> entityType: <const>2</const>, maxHP: <const>1</const>, reach: <const>1</const>, attack: <const>1</const>, step: <const>1</const>, costGold: <const>1</const>, costWood: <const>0</const>, 
+				<br>
+				<div style="margin-bottom: 10px"><action>BUILD CASTLE</action> <action>BUILD BARRACKS</action> <action>MOVE</action> <action>ATTACK</action> <action>HARVEST</action></div>
+			  </li>
+			  <li><b>LIGHT:</b> entityType: <const>3</const>, maxHP: <const>4</const>, reach: <const>1</const>, attack: <const>2</const>, step: <const>2</const>, costGold: <const>1</const>, costWood: <const>1</const>, 
+				<br>
+				<div style="margin-bottom: 10px"><action>MOVE</action> <action>ATTACK</action></div>
+			  </li>
+			  <li><b>HEAVY:</b> entityType: <const>4</const>, maxHP: <const>8</const>, reach: <const>1</const>, attack: <const>4</const>, step: <const>1</const>, costGold: <const>2</const>, costWood: <const>1</const>, 
+				<br>
+				<div style="margin-bottom: 10px"><action>MOVE</action> <action>ATTACK</action></div>
+			  </li>
+			  <li><b>RANGED:</b> entityType: <const>5</const>, maxHP: <const>1</const>, reach: <const>3</const>, attack: <const>1</const>, step: <const>1</const>, costGold: <const>1</const>, costWood: <const>1</const>, 
+				<br>
+				<div style="margin-bottom: 10px"><action>MOVE</action> <action>ATTACK</action></div>
+			  </li>
+		  </ul>
+	  </div>
+	</div>
+
+    <!-- Protocol block -->
+    <div class="blk">
+		<div class="title">Constraints</div>
+		<div class="text">
+			0 ≤ X &lt; <var>width</var>
+			<br>
+			0 ≤ Y &lt; <var>height</var>
+			<br>
+			Response time for first turn ≤ <const>1</const> s
+			<br> 
+			Response time for one turn ≤ <const>50</const> ms
+			<br> 
+			Turn limit is <const>200</const>.
+		</div>
+	</div>
+  </div>
+</div>
