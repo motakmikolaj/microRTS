@@ -160,18 +160,12 @@ public class Arena {
 			
 		// GOLD MINE
 		if (isTileMine(x,y)) {
-			tooltips.setTooltipText(getTileSprite(x,y), "Gold Mine\n x: " 
-								+ String.valueOf(x) + ", y: " 
-								+ String.valueOf(y) + "\n"
-								+ tile_health + " gold left.");
+			tooltips.setTooltipText(getTileSprite(x,y), String.format("Gold Mine\nx: %d, y: %d\n%s gold left.", x, y, tile_health));
 			setTileTooltipCheck(x, y, 1);
 			
 		// FOREST		
 		} else if (isTileForest(x,y)) {
-			tooltips.setTooltipText(getTileSprite(x,y), "Forest\nx: " 
-								+ String.valueOf(x) + ", y: " 
-								+ String.valueOf(y) + "\n"
-								+ tile_health + " wood left.");
+			tooltips.setTooltipText(getTileSprite(x,y), String.format("Forest\nx: %d, y: %d\n%s wood left.", x, y, tile_health));
 			setTileTooltipCheck(x, y, 1);
 			
 		
@@ -180,26 +174,13 @@ public class Arena {
 				if (p.getIndex() + 1 == getTileOwner(x,y)) {
 					// CASTLE
 					if (isTileCastle(x,y)) {
-						tooltips.setTooltipText(getTileSprite(x,y), "Castle\nx: " 
-										+ String.valueOf(x) + ", y: " 
-										+ String.valueOf(y) + "\nhealth: " 
-										+ tile_health + "\ngold: "
-										+ String.valueOf(p.gold()) + ", wood: "
-										+ String.valueOf(p.wood()));
+						tooltips.setTooltipText(getTileSprite(x,y), String.format("Castle\nx: %d, y: %d\nhealth: %s/%d\ngold: %d, wood: %d", x, y, tile_health, getTileMaxHP(x,y), p.gold(), p.wood()));
 										
 					// OTHER: BARRACKS | WORKER | LIGHT | HEAVY | RANGED
 					} else {
 						String tempname = Constants.ENTITY_TYPES_NAMES[getTileType(x,y)];
-						if (tempname.equals("BARRACKS")) tempname = "Barracks";
-						if (tempname.equals("WORKER"))   tempname = "Worker";
-						if (tempname.equals("LIGHT"))    tempname = "Light";
-						if (tempname.equals("HEAVY"))    tempname = "Heavy";
-						if (tempname.equals("RANGED"))   tempname = "Ranged";
-						tooltips.setTooltipText(getTileSprite(x,y), tempname + "\nx: " 
-								+ String.valueOf(x) + ", y: " 
-								+ String.valueOf(y) + "\nhealth: " 
-								+ tile_health);	
-				
+						tempname = tempname.substring(0, 1).toUpperCase() + tempname.substring(1).toLowerCase();
+						tooltips.setTooltipText(getTileSprite(x,y), String.format("%s\nx: %d, y: %d\nhealth: %s/%d", tempname, x, y, tile_health, getTileMaxHP(x,y)));
 					}
 				}
 			}
@@ -217,7 +198,7 @@ public class Arena {
 				int font_size = 30;
 				double di = Double.valueOf(i), dj = Double.valueOf(j), dt = Double.valueOf(Constants.TILE_SIZE);
 				if (ARENA_MAP[i][j][2] == 0){
-					tile_filename = Integer.toString(ARENA_MAP[i][j][0]) + "-" + Integer.toString(ARENA_MAP[i][j][1]) + ".png";
+					tile_filename = String.format("%d-%d.png", ARENA_MAP[i][j][0], ARENA_MAP[i][j][1]);
 					// non-empty entity
 					if (ARENA_MAP[i][j][0] != 0 || ARENA_MAP[i][j][1] == 2 || ARENA_MAP[i][j][1] == 3){
 						// unbreakable/infinite entity

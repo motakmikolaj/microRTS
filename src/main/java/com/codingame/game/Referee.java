@@ -40,9 +40,7 @@ public class Referee extends AbstractReferee {
         for (Player p : gameManager.getActivePlayers()) {
 			// SEND ENTITY_TYPE DATA:
 			// entityType, maxHP, reach, attack, step, goldCost, woodCost
-			p.sendInputLine(String.valueOf(Constants.WIDTH_TILES) 
-					+ " " + String.valueOf(Constants.HEIGHT_TILES)
-					+ " " + String.valueOf(Constants.START_GOLD));
+			p.sendInputLine(String.format("%d %d %d", Constants.WIDTH_TILES, Constants.HEIGHT_TILES, Constants.START_GOLD));
 				
 			for (int i = 0; i < Constants.ENTITY_TYPES_NAMES.length; i++) {
 				int [] temp_etype_array = ARENA.getETypes().get(Constants.ENTITY_TYPES_NAMES[i]).clone();
@@ -67,17 +65,10 @@ public class Referee extends AbstractReferee {
 					if (!ARENA.isTileEmpty(i,j)) {
 						String inputText = "";
 						if (ARENA.getTileOwner(i,j) == 0) {
-							inputText = String.valueOf(i) 
-									+ " " + String.valueOf(j) 
-									+ " " + String.valueOf(-1) 
-									+ " " + String.valueOf(ARENA.getTileType(i,j)) 
-									+ " " + String.valueOf(ARENA.getTileHealth(i,j));
+							inputText = String.format("%d %d %d %d %d", i, j, -1, ARENA.getTileType(i,j), ARENA.getTileHealth(i,j));
 						} else {
-							inputText = String.valueOf(i) 
-									+ " " + String.valueOf(j) 
-									+ " " + String.valueOf((p.getIndex() + ARENA.getTileOwner(i,j) - 1) % 2)  
-									+ " " + String.valueOf(ARENA.getTileType(i,j)) 
-									+ " " + String.valueOf(ARENA.getTileHealth(i,j));
+							int tempOwnerID = (p.getIndex() + ARENA.getTileOwner(i,j) - 1) % 2;
+							inputText = String.format("%d %d %d %d %d", i, j, tempOwnerID, ARENA.getTileType(i,j), ARENA.getTileHealth(i,j));
 						}
 						p.sendInputLine(inputText);
 					}
@@ -99,7 +90,7 @@ public class Referee extends AbstractReferee {
 				
 				// updating sprites
 				if (ARENA.getTilePointer(i,j) == 0){
-					tile_filename = Integer.toString(ARENA.getTileOwner(i,j)) + "-" + Integer.toString(ARENA.getTileType(i,j)) + ".png";
+					tile_filename = String.format("%d-%d.png", ARENA.getTileOwner(i,j), ARENA.getTileType(i,j));
 				}
 				
 				// check, if sprite changed
@@ -214,10 +205,10 @@ public class Referee extends AbstractReferee {
 		
 		if (wordslen == 1) {
 			// ===== WAIT =====
-			if (!words[0].equals("WAIT")) p.deactivate("Incorrect order: wrong syntax! \"" + order +"\"");
+			if (!words[0].equals("WAIT")) p.deactivate(String.format("Incorrect order: wrong syntax! \"%s\"", order));
 		
 		} else if (wordslen < 1 || wordslen == 2 || wordslen == 4 || wordslen > 6) {
-			p.deactivate("Incorrect order: wrong amount of arguments! \"" + order +"\"");
+			p.deactivate(String.format("Incorrect order: wrong amount of arguments! \"%s\"", order));
 			
 		} else if (checkPlayersEntityExists(Integer.valueOf(words[1]), Integer.valueOf(words[2]), p.getIndex()+1)) {
 			// ===== ORDER X Y ... =====
@@ -227,7 +218,7 @@ public class Referee extends AbstractReferee {
 				p.deactivate("Unknown error: not properly initialised entity! Contact the author!");
 				
 			} else if (!checkIfKnowsOrder(words[0], w1, w2)) {
-				p.deactivate("Incorrect order: entity doesn't know this order! \"" + order +"\"");
+				p.deactivate(String.format("Incorrect order: entity doesn't know this order! \"%s\"", order));
 				
 			} else if (wordslen == 3) {
 				//not really appliable for the modern version of the project, but still working to reset orders for entity, more of a hidden debug option
@@ -238,7 +229,7 @@ public class Referee extends AbstractReferee {
 					ARENA.getEntities().get(tempIndex).clearOrders();
 					ARENA.setTileLockStatus(w1, w2, -1); // locking entity in place
 				} else {
-					p.deactivate("Incorrect order: wrong syntax! \"" + order +"\"");
+					p.deactivate(String.format("Incorrect order: wrong syntax! \"%s\"", order));
 				}
 				
 			} else if (wordslen == 5) {
@@ -250,17 +241,17 @@ public class Referee extends AbstractReferee {
 						ARENA.getEntities().get(tempIndex).addLastOrder(order);
 						ARENA.setTileLockStatus(w1, w2, 0); // unlocking entity to potentially move
 					} else {
-						p.deactivate("Incorrect MOVE order: target tile out of reach! \"" + order +"\"");
+						p.deactivate(String.format("Incorrect MOVE order: target tile out of reach! \"%s\"", order));
 					}
 					
 				// ===== ATTACK X Y tX tY =====	
 				} else if (words[0].equals("ATTACK")) {
 					int reach = ARENA.getTileReach(w1,w2);
 					if (!ifInRange(w1, w2, w3, w4, reach)) {
-						p.deactivate("Incorrect ATTACK order: target tile out of reach! \"" + order +"\"");
+						p.deactivate(String.format("Incorrect ATTACK order: target tile out of reach! \"%s\"", order));
 						
 					} else if (!checkPlayersEntityExists(w3, w4, (p.getIndex()+1)%2 + 1)) {
-						p.deactivate("Incorrect ATTACK order: target tile doesn't have entity owned by enemy player! \"" + order +"\"");
+						p.deactivate(String.format("Incorrect ATTACK order: target tile doesn't have entity owned by enemy player! \"%s\"", order));
 						
 					} else {
 						ARENA.getEntities().get(tempIndex).addLastOrder(order);
@@ -271,10 +262,10 @@ public class Referee extends AbstractReferee {
 				} else if (words[0].equals("HARVEST")) {
 					int reach = ARENA.getTileReach(w1,w2);
 					if (!ifInRange(w1, w2, w3, w4, reach)) {
-						p.deactivate("Incorrect HARVEST order: target tile out of reach! \"" + order +"\"");
+						p.deactivate(String.format("Incorrect HARVEST order: target tile out of reach! \"%s\"", order));
 						
 					} else if (!checkIfHarvestable(w3, w4)) {
-						p.deactivate("Incorrect HARVEST order: target tile doesn't have harvestable resource! \"" + order +"\"");
+						p.deactivate(String.format("Incorrect HARVEST order: target tile doesn't have harvestable resource! \"%s\"", order));
 						
 					} else {
 						ARENA.getEntities().get(tempIndex).addLastOrder(order);
@@ -282,7 +273,7 @@ public class Referee extends AbstractReferee {
 					}
 					
 				} else {
-						p.deactivate("Incorrect order: wrong syntax! \"" + order +"\"");
+						p.deactivate(String.format("Incorrect order: wrong syntax! \"%s\"", order));
 				}
 				
 			} else if (wordslen == 6) {
@@ -294,17 +285,14 @@ public class Referee extends AbstractReferee {
 					if (checkIfInBounds(w3, w4) && ifInRange(w1, w2, w3, w4, reach)) {
 						String tempEntityTypeValue = matchEntityTypeValue(words[5]);
 						if (checkBuildEntityTypeValidity(ARENA.getTileType(w1,w2), Integer.valueOf(tempEntityTypeValue))) {
-							ARENA.getEntities().get(tempIndex).addLastOrder("BUILD " + words[1] 
-																			 + " " + words[2] 
-																			 + " " + words[3] 
-																			 + " " + words[4] 
-																			 + " " + tempEntityTypeValue);
+							ARENA.getEntities().get(tempIndex).addLastOrder(String.format("BUILD %s %s %s %s %s", words[1], words[2], words[3], words[4], tempEntityTypeValue));
 							ARENA.setTileLockStatus(w1, w2, -1); // locking entity in place
+							
 						} else {
-							p.deactivate("Incorrect BUILD order: entity can't build given entityType! \"" + order +"\"");
+							p.deactivate(String.format("Incorrect BUILD order: entity can't build given entityType! \"%s\"", order));
 						}
 					} else {
-						p.deactivate("Incorrect BUILD order: target tile out of reach! \"" + order +"\"");
+						p.deactivate(String.format("Incorrect BUILD order: target tile out of reach! \"%s\"", order));
 					}
 
 				// ===== TRAIN X Y tX tY eT =====
@@ -313,32 +301,28 @@ public class Referee extends AbstractReferee {
 					if (checkIfInBounds(w3, w4) && ifInRange(w1, w2, w3, w4, reach)) {
 						String tempEntityTypeValue = matchEntityTypeValue(words[5]);
 						if (checkTrainEntityTypeValidity(ARENA.getTileType(w1,w2), Integer.valueOf(tempEntityTypeValue))) {
-							ARENA.getEntities().get(tempIndex).addLastOrder("TRAIN " + words[1] 
-																			 + " " + words[2] 
-																			 + " " + words[3] 
-																			 + " " + words[4] 
-																			 + " " + tempEntityTypeValue);
+							ARENA.getEntities().get(tempIndex).addLastOrder(String.format("TRAIN %s %s %s %s %s", words[1], words[2], words[3], words[4], tempEntityTypeValue));
 							ARENA.setTileLockStatus(w1, w2, -1); // locking entity in place
 						} else {
-							p.deactivate("Incorrect TRAIN order: entity can't train given entityType! \"" + order +"\"");
+							p.deactivate(String.format("Incorrect TRAIN order: entity can't train given entityType! \"%s\"", order));
 						}
 					} else {
-						p.deactivate("Incorrect TRAIN order: target tile out of reach! \"" + order +"\"");
+						p.deactivate(String.format("Incorrect TRAIN order: target tile out of reach! \"%s\"", order));
 					}
 					
 				// ===== UNKNOWN X Y tX tY eT =====
 				} else {
-						p.deactivate("Incorrect order: wrong syntax! \"" + order +"\"");
+						p.deactivate(String.format("Incorrect order: wrong syntax! \"%s\"", order));
 				}
 			
 			// ===== word.length > 6 =====
 			} else {
-				p.deactivate("Incorrect order: wrong amount of arguments! \"" + order +"\"");
+				p.deactivate(String.format("Incorrect order: wrong amount of arguments! \"%s\"", order));
 			}
 		
 		// ===== ORDER X Y ... | wrong X or Y =====
 		} else {
-			p.deactivate("Incorrect order: tile doesn't have entity owned by player! \"" + order +"\"");
+			p.deactivate(String.format("Incorrect order: tile doesn't have entity owned by player! \"%s\"", order));
 		}
 	}
 	
@@ -412,12 +396,7 @@ public class Referee extends AbstractReferee {
 						ARENA.addPlayerEntity(w3, w4, ARENA.getTileOwner(w1,w2), Constants.ENTITY_TYPES_NAMES[w5]);
 						p.addMaterial("GOLD", -costGold);
 						p.addMaterial("WOOD", -costWood);
-						gameManager.addToGameSummary(p.getNicknameToken() + ": entity [" 
-								+ words[1] + ", " 
-								+ words[2] + "]  created: " 
-								+ Constants.ENTITY_TYPES_NAMES[w5] + " at [" 
-								+ words[3] + ", " 
-								+ words[4] + "].\n");
+						gameManager.addToGameSummary(String.format("%s: entity [%s, %s] created: %s at [%s, %s].\n", p.getNicknameToken(), words[1], words[2], Constants.ENTITY_TYPES_NAMES[w5], words[3], words[4]));
 						return 0;
 						
 					// if targetTile is not empty - but other entity may move this turn, emptying it
@@ -427,9 +406,7 @@ public class Referee extends AbstractReferee {
 					
 				// insufficient resources
 				} else {
-					gameManager.addToGameSummary(p.getNicknameToken() 
-							+ " [Warning] has insufficient resources to create new entity: " 
-							+ Constants.ENTITY_TYPES_NAMES[w5] + "!\n");
+					gameManager.addToGameSummary(String.format("%s [Warning] has insufficient resources to create new entity: %s!\n", p.getNicknameToken(), Constants.ENTITY_TYPES_NAMES[w5]));
 					return 2;
 				}
 			}
@@ -523,11 +500,7 @@ public class Referee extends AbstractReferee {
 					
 					ARENA.setTileLockStatus(w3, w4, -1); //locking target tile after making move
 					 
-					gameManager.addToGameSummary(gameManager.getPlayer(ARENA.getTileOwner(w3, w4)-1).getNicknameToken() + ": entity [" 
-								+ words[1] + ", " 
-								+ words[2] + "] moved to [" 
-								+ words[3] + ", " 
-								+ words[4] + "].\n");
+					gameManager.addToGameSummary(String.format("%s: entity [%s, %s] moved to [%s, %s].\n", gameManager.getPlayer(ARENA.getTileOwner(w3, w4)-1).getNicknameToken(), words[1], words[2], words[3], words[4]));
 								
 				// if targetTile is not empty - but other entity may move this turn, emptying it
 				} else if (ARENA.getTileLockStatus(w1, w2) == ARENA.getTileLockStatus(w3, w4)) {
@@ -566,18 +539,10 @@ public class Referee extends AbstractReferee {
 						
 						ARENA.raiseTileLockStatus(w3, w4); //rising ifLocked value after making one step out of two
 							 
-						gameManager.addToGameSummary(gameManager.getPlayer(ARENA.getTileOwner(w3, w4)-1).getNicknameToken() + ": entity [" 
-									+ words[1] + ", " 
-									+ words[2] + "] moved to [" 
-									+ String.valueOf(w3) + ", " 
-									+ String.valueOf(w4) + "].\n");
+						gameManager.addToGameSummary(String.format("%s: entity [%s, %s] moved to [%d, %d].\n", gameManager.getPlayer(ARENA.getTileOwner(w3, w4)-1).getNicknameToken(), words[1], words[2], w3, w4));
 						
 						// after successfully moving one step - add second step to queue
-						movQ.addLast("MOVE " 
-						+ String.valueOf(w3) + " " 
-						+ String.valueOf(w4) + " "
-						+ String.valueOf(stepRoad[4]) + " "
-						+ String.valueOf(stepRoad[5]));
+						movQ.addLast(String.format("MOVE %d %d %d %d", w3, w4, stepRoad[4], stepRoad[5]));
 										
 					// if targetTile is not empty - but other entity may move this turn, emptying it
 					} else if (ARENA.getTileLockStatus(w1, w2) == ARENA.getTileLockStatus(w3, w4)) {
@@ -633,11 +598,7 @@ public class Referee extends AbstractReferee {
 									ARENA.harvestTile(w3,w4);
 								}
 								p.addMaterial("GOLD", 1);
-								gameManager.addToGameSummary(p.getNicknameToken() + ": entity [" 
-										+ words[1] + ", " 
-										+ words[2] + "] got 1 GOLD from [" 
-										+ words[3] + ", " 
-										+ words[4] + "].\n");
+								gameManager.addToGameSummary(String.format("%s: entity [%s, %s] got 1 GOLD from [%s, %s].\n", p.getNicknameToken(), words[1], words[2], words[3], words[4]));
 							}
 							
 						// WOOD
@@ -649,27 +610,15 @@ public class Referee extends AbstractReferee {
 									ARENA.harvestTile(w3,w4);
 								}
 								p.addMaterial("WOOD", 1);
-								gameManager.addToGameSummary(p.getNicknameToken() + ": entity [" 
-										+ words[1] + ", " 
-										+ words[2] + "] got 1 WOOD from [" 
-										+ words[3] + ", " 
-										+ words[4] + "].\n");		
+								gameManager.addToGameSummary(String.format("%s: entity [%s, %s] got 1 WOOD from [%s, %s].\n", p.getNicknameToken(), words[1], words[2], words[3], words[4]));	
 							}
 						} else {
-							gameManager.addToGameSummary(p.getNicknameToken() + ": entity [" 
-										+ words[1] + ", " 
-										+ words[2] + "] failed to harvest from [" 
-										+ words[3] + ", " 
-										+ words[4] + "].\n");
+							gameManager.addToGameSummary(String.format("%s: entity [%s, %s] failed to harvest from [%s, %s].\n", p.getNicknameToken(), words[1], words[2], words[3], words[4]));
 						}
 					}
 				}
 			} else {
-				gameManager.addToGameSummary(gameManager.getPlayer(ARENA.getTileOwner(w1, w2)-1).getNicknameToken() + ": entity [" 
-						+ words[1] + ", " 
-						+ words[2] + "] failed to harvest from [" 
-						+ words[3] + ", " 
-						+ words[4] + "]. Because, it already depleted!\n");
+				gameManager.addToGameSummary(String.format("%s: entity [%s, %s] failed to harvest from [%s, %s]. Because, it's already depleted!\n", gameManager.getPlayer(ARENA.getTileOwner(w1, w2)-1).getNicknameToken(), words[1], words[2], words[3], words[4]));
 			}
 		}
 		
@@ -695,12 +644,7 @@ public class Referee extends AbstractReferee {
 								attack = ARENA.getTileHealth(w3,w4);
 							} 
 							ARENA.attackTile(w3, w4, attack);
-							gameManager.addToGameSummary(p.getNicknameToken() + ": entity [" 
-									+ words[1] + ", " 
-									+ words[2] + "] took "
-									+ String.valueOf(attack) + " damage from [" 
-									+ words[3] + ", " 
-									+ words[4] + "].\n");
+							gameManager.addToGameSummary(String.format("%s: entity [%s, %s] took %d damage from [%s, %s].\n", p.getNicknameToken(), words[1], words[2], attack, words[3], words[4]));
 						}
 					}
 				}
