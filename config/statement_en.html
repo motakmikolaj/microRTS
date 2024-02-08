@@ -105,6 +105,20 @@
 				  </div>
 				  
 				  <h3 style="font-size: 14px;font-weight: 700;padding-top: 15px;color: #838891;padding-bottom: 15px;">
+					  <span>Entity type data:</span>
+				  </h3>
+				  <div class="text">
+					  <ul>
+						  <li><b>CASTLE:</b> entityType: <const>0</const>, maxHP: <const>10</const>, reach: <const>3</const>, attack: <const>0</const>, step: <const>0</const>, costGold: <const>5</const>, costWood: <const>5</const></li>
+						  <li><b>BARRACKS:</b> entityType: <const>1</const>, maxHP: <const>4</const>, reach: <const>2</const>, attack: <const>0</const>, step: <const>0</const>, costGold: <const>0</const>, costWood: <const>5</const></li>
+						  <li><b>WORKER:</b> entityType: <const>2</const>, maxHP: <const>1</const>, reach: <const>1</const>, attack: <const>1</const>, step: <const>1</const>, costGold: <const>1</const>, costWood: <const>0</const></li>
+						  <li><b>LIGHT:</b> entityType: <const>3</const>, maxHP: <const>4</const>, reach: <const>1</const>, attack: <const>2</const>, step: <const>2</const>, costGold: <const>1</const>, costWood: <const>1</const></li>
+						  <li><b>HEAVY:</b> entityType: <const>4</const>, maxHP: <const>8</const>, reach: <const>1</const>, attack: <const>4</const>, step: <const>1</const>, costGold: <const>2</const>, costWood: <const>1</const></li>
+						  <li><b>RANGED:</b> entityType: <const>5</const>, maxHP: <const>1</const>, reach: <const>3</const>, attack: <const>1</const>, step: <const>1</const>, costGold: <const>1</const>, costWood: <const>1</const></li>
+					  </ul>
+				  </div>
+				  
+				  <h3 style="font-size: 14px;font-weight: 700;padding-top: 15px;color: #838891;padding-bottom: 15px;">
 					  <span>Game turn</span>
 				  </h3>
 				  <div style="margin-bottom: 10px">
@@ -227,30 +241,12 @@
       <div class="text">
 		  <p>Each <var>entityType</var> has certain list of orders it can do within it's <var>reach</var>. Each entity can only do one order per turn.</p>
 		  <ul>
-			  <li><b>CASTLE:</b> entityType: <const>0</const>, maxHP: <const>10</const>, reach: <const>3</const>, attack: <const>0</const>, step: <const>0</const>, costGold: <const>5</const>, costWood: <const>5</const>, 
-				<br>
-				<div style="margin-bottom: 10px"><action>TRAIN WORKER</action></div>
-			  </li>
-			  <li><b>BARRACKS:</b> entityType: <const>1</const>, maxHP: <const>4</const>, reach: <const>2</const>, attack: <const>0</const>, step: <const>0</const>, costGold: <const>0</const>, costWood: <const>5</const>, 
-				<br>
-				<div style="margin-bottom: 10px"><action>TRAIN LIGHT</action> <action>TRAIN HEAVY</action> <action>TRAIN RANGED</action></div>
-			  </li>
-			  <li><b>WORKER:</b> entityType: <const>2</const>, maxHP: <const>1</const>, reach: <const>1</const>, attack: <const>1</const>, step: <const>1</const>, costGold: <const>1</const>, costWood: <const>0</const>, 
-				<br>
-				<div style="margin-bottom: 10px"><action>BUILD CASTLE</action> <action>BUILD BARRACKS</action> <action>MOVE</action> <action>ATTACK</action> <action>HARVEST</action></div>
-			  </li>
-			  <li><b>LIGHT:</b> entityType: <const>3</const>, maxHP: <const>4</const>, reach: <const>1</const>, attack: <const>2</const>, step: <const>2</const>, costGold: <const>1</const>, costWood: <const>1</const>, 
-				<br>
-				<div style="margin-bottom: 10px"><action>MOVE</action> <action>ATTACK</action></div>
-			  </li>
-			  <li><b>HEAVY:</b> entityType: <const>4</const>, maxHP: <const>8</const>, reach: <const>1</const>, attack: <const>4</const>, step: <const>1</const>, costGold: <const>2</const>, costWood: <const>1</const>, 
-				<br>
-				<div style="margin-bottom: 10px"><action>MOVE</action> <action>ATTACK</action></div>
-			  </li>
-			  <li><b>RANGED:</b> entityType: <const>5</const>, maxHP: <const>1</const>, reach: <const>3</const>, attack: <const>1</const>, step: <const>1</const>, costGold: <const>1</const>, costWood: <const>1</const>, 
-				<br>
-				<div style="margin-bottom: 10px"><action>MOVE</action> <action>ATTACK</action></div>
-			  </li>
+			  <li><div style="margin-bottom: 10px"><b>CASTLE:</b> <action>TRAIN WORKER</action></div></li>
+			  <li><div style="margin-bottom: 10px"><b>BARRACKS:</b> <action>TRAIN LIGHT</action> <action>TRAIN HEAVY</action> <action>TRAIN RANGED</action></div></li>
+			  <li><div style="margin-bottom: 10px"><b>WORKER:</b> <action>BUILD CASTLE</action> <action>BUILD BARRACKS</action> <action>MOVE</action> <action>ATTACK</action> <action>HARVEST</action></div></li>
+			  <li><div style="margin-bottom: 10px"><b>LIGHT:</b> <action>MOVE</action> <action>ATTACK</action></div></li>
+			  <li><div style="margin-bottom: 10px"><b>HEAVY:</b> <action>MOVE</action> <action>ATTACK</action></div></li>
+			  <li><div style="margin-bottom: 10px"><li><b>RANGED:</b> <action>MOVE</action> <action>ATTACK</action></div></li>
 		  </ul>
 	  </div>
 	</div>
