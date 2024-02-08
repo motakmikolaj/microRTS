@@ -54,7 +54,7 @@
 					  <span>Neutral tiles</span>
 				  </h3>
 				  <div style="margin-bottom: 10px">
-					  <p>Neutral tiles have owner identificator value equal to <const>-1</const>. There are three types of those entities in this version of the game:</p>
+					  <p>Neutral tiles have owner identificator value equal to <const>-1</const>. There are three types of those entities in this variant of the game:</p>
 					  <ul>
 						  <li>
 							  <b>Walls</b> - they are the main physical obstacle in the arena. If not defined differently, they are <b>unbreakable</b>, which means their base health is equal <const>-1</const>.
@@ -72,7 +72,7 @@
 					  <span>Buildings</span>
 				  </h3>
 				  <div style="margin-bottom: 10px">
-					  <p>Buildings are part of player tiles so their <var>owner</var> corresponds to the player's ID (player = <const>0</const>, enemy = <const>1</const>). In this variant of the game they can't <b>move</b> or <b>attack</b>, but they can <b>train</b> units in the range of their <var>reach</var>. Usually much more costly to be built than other entities.</p>
+					  <p>Buildings are part of player tiles so their <var>owner</var> corresponds to the player's ID (player = <const>0</const>, enemy = <const>1</const>). They can't <b>move</b> or <b>attack</b>, but they can <b>train</b> units in the range of their <var>reach</var>. Usually much more costly to be built than other entities.</p>
 					  <ul>
 						  <li>
 							  <b>Castles</b> - pivotal building for each player. The player who doesn't have any castles left loses. They can train <b>Workers</b>.
@@ -87,16 +87,16 @@
 					  <span>Units</span>
 				  </h3>
 				  <div style="margin-bottom: 10px">
-					  <p>Units are the more dynamic player tiles akin to chess pieces. In this variant of the game all of them can <b>move</b> at the speed of <var>step</var> tiles per turn. They can also do all the given actions in the range of their <var>reach</var>.</p>
+					  <p>Units are the more dynamic player tiles akin to chess pieces. All of them can <b>move</b> at the speed of <var>step</var> tiles per turn. They can also do all the given actions in the range of their <var>reach</var>.</p>
 					  <ul>
 						  <li>
-							  <b>Workers</b> - most universal unit. Their main functionality is to <b>build</b> and <b>harvest</b> resources. They can <b>attack</b>, but they aren't very durable, strong or fast, their range is also only limited to one tile in this variant of the game.
+							  <b>Workers</b> - most universal unit. Their main functionality is to <b>build</b> and <b>harvest</b> resources. They can <b>attack</b>, but they aren't very durable, strong or fast, their range is also only limited to one tile.
 						  </li>
 						  <li>
-							  <b>Light</b> - more advanced combat unit. They are more durable and stronger than regular Workers. Their main characteristic is that they can move two tiles per turn in this variant of the game.
+							  <b>Light</b> - more advanced combat unit. They are more durable and stronger than regular Workers. Their main characteristic is that they can move two tiles per turn.
 						  </li>
 						  <li>
-							  <b>Heavy</b> - the tank unit. Strongest and most durable unit in this variant of the game. They are more costly to produce.
+							  <b>Heavy</b> - the tank unit. Strongest and most durable unit in the game. They are more costly to produce.
 						  </li>
 						  <li>
 							  <b>Ranged</b> - weak, long range unit. Their main characteristic is long attack range of three tiles.
@@ -105,16 +105,30 @@
 				  </div>
 				  
 				  <h3 style="font-size: 14px;font-weight: 700;padding-top: 15px;color: #838891;padding-bottom: 15px;">
-					  <span>Entity type data:</span>
+					  <span>Entity type data</span>
 				  </h3>
 				  <div class="text">
+					  <p>Each <var>entityType</var> has certain list of orders it can do within it's <var>reach</var>. Each entity can only do one order per turn.</p>
+		  
 					  <ul>
-						  <li><b>CASTLE:</b> entityType: <const>0</const>, maxHP: <const>10</const>, reach: <const>3</const>, attack: <const>0</const>, step: <const>0</const>, costGold: <const>5</const>, costWood: <const>5</const></li>
-						  <li><b>BARRACKS:</b> entityType: <const>1</const>, maxHP: <const>4</const>, reach: <const>2</const>, attack: <const>0</const>, step: <const>0</const>, costGold: <const>0</const>, costWood: <const>5</const></li>
-						  <li><b>WORKER:</b> entityType: <const>2</const>, maxHP: <const>1</const>, reach: <const>1</const>, attack: <const>1</const>, step: <const>1</const>, costGold: <const>1</const>, costWood: <const>0</const></li>
-						  <li><b>LIGHT:</b> entityType: <const>3</const>, maxHP: <const>4</const>, reach: <const>1</const>, attack: <const>2</const>, step: <const>2</const>, costGold: <const>1</const>, costWood: <const>1</const></li>
-						  <li><b>HEAVY:</b> entityType: <const>4</const>, maxHP: <const>8</const>, reach: <const>1</const>, attack: <const>4</const>, step: <const>1</const>, costGold: <const>2</const>, costWood: <const>1</const></li>
-						  <li><b>RANGED:</b> entityType: <const>5</const>, maxHP: <const>1</const>, reach: <const>3</const>, attack: <const>1</const>, step: <const>1</const>, costGold: <const>1</const>, costWood: <const>1</const></li>
+						  <li><b>CASTLE:</b> <action>TRAIN WORKER</action>
+							<div style="margin-bottom: 10px">entityType: <const>0</const>, maxHP: <const>10</const>, reach: <const>3</const>, attack: <const>0</const>, step: <const>0</const>, costGold: <const>5</const>, costWood: <const>5</const></div>
+						  </li>
+						  <li><b>BARRACKS:</b> <action>TRAIN LIGHT</action> <action>TRAIN HEAVY</action> <action>TRAIN RANGED</action>
+							<div style="margin-bottom: 10px">entityType: <const>1</const>, maxHP: <const>4</const>, reach: <const>2</const>, attack: <const>0</const>, step: <const>0</const>, costGold: <const>0</const>, costWood: <const>5</const></div>
+						  </li>
+						  <li><b>WORKER:</b> <action>BUILD CASTLE</action> <action>BUILD BARRACKS</action> <action>MOVE</action> <action>ATTACK</action> <action>HARVEST</action>
+							<div style="margin-bottom: 10px">entityType: <const>2</const>, maxHP: <const>1</const>, reach: <const>1</const>, attack: <const>1</const>, step: <const>1</const>, costGold: <const>1</const>, costWood: <const>0</const></div>
+						  </li>
+						  <li><b>LIGHT:</b> <action>MOVE</action> <action>ATTACK</action>
+							<div style="margin-bottom: 10px">entityType: <const>3</const>, maxHP: <const>4</const>, reach: <const>1</const>, attack: <const>2</const>, step: <const>2</const>, costGold: <const>1</const>, costWood: <const>1</const></div>
+						  </li>
+						  <li><b>HEAVY:</b> <action>MOVE</action> <action>ATTACK</action>
+							<div style="margin-bottom: 10px">entityType: <const>4</const>, maxHP: <const>8</const>, reach: <const>1</const>, attack: <const>4</const>, step: <const>1</const>, costGold: <const>2</const>, costWood: <const>1</const></div>
+						  </li>
+						  <li><b>RANGED:</b> <action>MOVE</action> <action>ATTACK</action>
+							<div style="margin-bottom: 10px">entityType: <const>5</const>, maxHP: <const>1</const>, reach: <const>3</const>, attack: <const>1</const>, step: <const>1</const>, costGold: <const>1</const>, costWood: <const>1</const></div>
+						  </li>
 					  </ul>
 				  </div>
 				  
@@ -219,7 +233,7 @@
     <div class="blk">
       <div class="title">Orders</div>
       <div class="text">
-		  <p>When writing "building" and "training" orders - for target entity type both numerical and string values are acceptable (e.g. "CASTLE" or "0"). Some of the orders include pairs of coordinates: first pair always refers to the ordered entity and the other refers to the target entity or location.</p>
+		  <p>When writing "building" and "training" orders - for <var>entityType</var> both numerical and string values are acceptable (e.g. "CASTLE" or "0"). Some of the orders include pairs of coordinates: first pair always refers to the ordered entity and the other refers to the target entity or location.</p>
 		  <action>BUILD X Y tX tY [entityType]</action> - orders entity to construct a building at the target.
 		  <br>
 		  <action>TRAIN X Y tX tY [entityType]</action> - orders entity to train an unit at the target.
@@ -232,22 +246,6 @@
 		  <br>
 		  <action>WAIT</action> - used when no orders need to be sent out.
 		  <br>
-	  </div>
-	</div>
-	
-	<!-- Protocol block -->
-    <div class="blk">
-      <div class="title">Entities</div>
-      <div class="text">
-		  <p>Each <var>entityType</var> has certain list of orders it can do within it's <var>reach</var>. Each entity can only do one order per turn.</p>
-		  <ul>
-			  <li><div style="margin-bottom: 10px"><b>CASTLE:</b> <action>TRAIN WORKER</action></div></li>
-			  <li><div style="margin-bottom: 10px"><b>BARRACKS:</b> <action>TRAIN LIGHT</action> <action>TRAIN HEAVY</action> <action>TRAIN RANGED</action></div></li>
-			  <li><div style="margin-bottom: 10px"><b>WORKER:</b> <action>BUILD CASTLE</action> <action>BUILD BARRACKS</action> <action>MOVE</action> <action>ATTACK</action> <action>HARVEST</action></div></li>
-			  <li><div style="margin-bottom: 10px"><b>LIGHT:</b> <action>MOVE</action> <action>ATTACK</action></div></li>
-			  <li><div style="margin-bottom: 10px"><b>HEAVY:</b> <action>MOVE</action> <action>ATTACK</action></div></li>
-			  <li><div style="margin-bottom: 10px"><li><b>RANGED:</b> <action>MOVE</action> <action>ATTACK</action></div></li>
-		  </ul>
 	  </div>
 	</div>
 
