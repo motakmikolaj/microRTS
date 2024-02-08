@@ -174,35 +174,34 @@ public class Arena {
 								+ tile_health + " wood left.");
 			setTileTooltipCheck(x, y, 1);
 			
-		// CASTLE		
+		
 		} else if (!isTileNeutral(x,y)) {
-			if (isTileCastle(x,y)) {
-				for (Player p : gameManager.getActivePlayers()) {
-					if (p.getIndex() + 1 == getTileOwner(x,y)) {
-						tooltips.setTooltipText(getTileSprite(x,y), "Castle\nplayer: " 
-										+ p.getNicknameToken() + "\nx: " 
+			for (Player p : gameManager.getActivePlayers()) {
+				if (p.getIndex() + 1 == getTileOwner(x,y)) {
+					// CASTLE
+					if (isTileCastle(x,y)) {
+						tooltips.setTooltipText(getTileSprite(x,y), "Castle\nx: " 
 										+ String.valueOf(x) + ", y: " 
 										+ String.valueOf(y) + "\nhealth: " 
 										+ tile_health + "\ngold: "
 										+ String.valueOf(p.gold()) + ", wood: "
 										+ String.valueOf(p.wood()));
+										
+					// OTHER: BARRACKS | WORKER | LIGHT | HEAVY | RANGED
+					} else {
+						String tempname = Constants.ENTITY_TYPES_NAMES[getTileType(x,y)];
+						if (tempname.equals("BARRACKS")) tempname = "Barracks";
+						if (tempname.equals("WORKER"))   tempname = "Worker";
+						if (tempname.equals("LIGHT"))    tempname = "Light";
+						if (tempname.equals("HEAVY"))    tempname = "Heavy";
+						if (tempname.equals("RANGED"))   tempname = "Ranged";
+						tooltips.setTooltipText(getTileSprite(x,y), tempname + "\nx: " 
+								+ String.valueOf(x) + ", y: " 
+								+ String.valueOf(y) + "\nhealth: " 
+								+ tile_health);	
+				
 					}
 				}
-			
-			// OTHER: BARRACKS | WORKER | LIGHT | HEAVY | RANGED
-			} else {
-				String tempname = Constants.ENTITY_TYPES_NAMES[getTileType(x,y)];
-				if (tempname.equals("BARRACKS")) tempname = "Barracks";
-				if (tempname.equals("WORKER"))   tempname = "Worker";
-				if (tempname.equals("LIGHT"))    tempname = "Light";
-				if (tempname.equals("HEAVY"))    tempname = "Heavy";
-				if (tempname.equals("RANGED"))   tempname = "Ranged";
-				
-				tooltips.setTooltipText(getTileSprite(x,y), tempname + "\nplayer: "
-										+ p.getNicknameToken() + "\nx: " 
-										+ String.valueOf(x) + ", y: " 
-										+ String.valueOf(y) + "\nhealth: " 
-										+ tile_health);	
 			}
 			setTileTooltipCheck(x, y, 1);
 		}
