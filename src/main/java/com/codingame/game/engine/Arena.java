@@ -425,9 +425,9 @@ public class Arena {
 	
 	
 	// Finds and returns indice of entity that is present at those coordinates.
-	public int findRTSEntity (int x, int y){
+	public int findRTSEntity (int coordx, int coordy){
 		for (int i = 0; i < ENTITY_LIST.size(); i++) {
-			if (ENTITY_LIST.get(i).x == x && ENTITY_LIST.get(i).y == y){
+			if (ENTITY_LIST.get(i).x == coordx && ENTITY_LIST.get(i).y == coordy){
 				return i;
 			}
 		}

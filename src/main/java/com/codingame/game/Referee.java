@@ -40,7 +40,7 @@ public class Referee extends AbstractReferee {
         for (Player p : gameManager.getActivePlayers()) {
 			// SEND ENTITY_TYPE DATA:
 			// entityType, maxHP, reach, attack, step, goldCost, woodCost
-			p.sendInputLine(String.format("%d %d %d", Constants.WIDTH_TILES, Constants.HEIGHT_TILES, Constants.START_GOLD));
+			p.sendInputLine(String.format("%d %d", Constants.WIDTH_TILES, Constants.HEIGHT_TILES));
 				
 			for (int i = 0; i < Constants.ENTITY_TYPES_NAMES.length; i++) {
 				int [] temp_etype_array = ARENA.getETypes().get(Constants.ENTITY_TYPES_NAMES[i]).clone();
@@ -58,7 +58,7 @@ public class Referee extends AbstractReferee {
         //List<Player> allPlayers = gameManager.getPlayers();
         for (Player p : gameManager.getActivePlayers()) {
 			// SEND ARENA DATA:
-			p.sendInputLine(String.valueOf(ARENA.getEntities().size()));
+			p.sendInputLine(String.format("%d %d %d %d %d", ARENA.getEntities().size(), p.gold(), p.wood(), gameManager.getPlayer((p.getIndex()+1) % 2).gold(), gameManager.getPlayer((p.getIndex()+1) % 2).wood()));
 			for (int i = 0; i < Constants.WIDTH_TILES; i++) {
 				for (int j = 0; j < Constants.HEIGHT_TILES; j++) {
 					// x | y | ownerID (-1:neutral,0:player1,1:player2) | entityType (empty, gold, worker, castle, etc.) | health
@@ -224,8 +224,8 @@ public class Referee extends AbstractReferee {
 				//not really appliable for the modern version of the project, but still working to reset orders for entity, more of a hidden debug option
 				// ===== STOP X Y ===== 
 				if (words[0].equals("STOP")) {
-					ARENA.getEntities().get(tempIndex).actionCountdown = 0;
-					ARENA.getEntities().get(tempIndex).activeOrder = "WAIT";
+					ARENA.getEntities().get(tempIndex).setCountdown(0);
+					ARENA.getEntities().get(tempIndex).setActiveOrder("WAIT");
 					ARENA.getEntities().get(tempIndex).clearOrders();
 					ARENA.setTileLockStatus(w1, w2, -1); // locking entity in place
 				} else {
@@ -396,7 +396,7 @@ public class Referee extends AbstractReferee {
 						ARENA.addPlayerEntity(w3, w4, ARENA.getTileOwner(w1,w2), Constants.ENTITY_TYPES_NAMES[w5]);
 						p.addMaterial("GOLD", -costGold);
 						p.addMaterial("WOOD", -costWood);
-						gameManager.addToGameSummary(String.format("%s: entity [%s, %s] created: %s at [%s, %s].\n", p.getNicknameToken(), words[1], words[2], Constants.ENTITY_TYPES_NAMES[w5], words[3], words[4]));
+						gameManager.addToGameSummary(String.format("%s: [%d, %d] created %s at [%d, %d].\n", p.getNicknameToken(), w1, w2, Constants.ENTITY_TYPES_NAMES[w5], w3, w4));
 						return 0;
 						
 					// if targetTile is not empty - but other entity may move this turn, emptying it
@@ -485,8 +485,11 @@ public class Referee extends AbstractReferee {
 			int step      = ARENA.getTileStep(w1,w2);                                                  //entityStep
 			int tempIndex = ARENA.findRTSEntity(Integer.valueOf(words[1]), Integer.valueOf(words[2])); //entityIndex	
 			
+			if (tempIndex == -1) { 
+				gameManager.getPlayer(ARENA.getTileOwner(w1, w2)-1).deactivate("Unknown error: not properly initialised or changed entity! Contact the author!");
+				
 			// checks if one step is needed
-			if (ifInRange(w1, w2, w3, w4, 1)) {		
+			} else if (ifInRange(w1, w2, w3, w4, 1)) {		
 				// if targetTile is empty, in range and accessible by walking
 				if (ARENA.isTileEmpty(w3,w4)) {
 					// update ARENA_MAP tiles
@@ -495,12 +498,11 @@ public class Referee extends AbstractReferee {
 						ARENA.setTileValue(w1, w2, k, 0);
 					}
 					// update ENTITY_LIST
-					ARENA.getEntities().get(tempIndex).x = w3; 
-					ARENA.getEntities().get(tempIndex).y = w4;
+					ARENA.getEntities().get(tempIndex).setCoords(w3, w4);
 					
 					ARENA.setTileLockStatus(w3, w4, -1); //locking target tile after making move
 					 
-					gameManager.addToGameSummary(String.format("%s: entity [%s, %s] moved to [%s, %s].\n", gameManager.getPlayer(ARENA.getTileOwner(w3, w4)-1).getNicknameToken(), words[1], words[2], words[3], words[4]));
+					//gameManager.addToGameSummary(String.format("%s: entity [%s, %s] moved to [%s, %s].\n", gameManager.getPlayer(ARENA.getTileOwner(w3, w4)-1).getNicknameToken(), words[1], words[2], words[3], words[4]));
 								
 				// if targetTile is not empty - but other entity may move this turn, emptying it
 				} else if (ARENA.getTileLockStatus(w1, w2) == ARENA.getTileLockStatus(w3, w4)) {
@@ -510,17 +512,19 @@ public class Referee extends AbstractReferee {
 				// if targetTile is not empty - but other entity has higher ifLocked count (likely a loop)
 				} else if (ARENA.getTileLockStatus(w1, w2) < ARENA.getTileLockStatus(w3, w4)) {
 					ARENA.setTileLockStatus(w1, w2, -1); //locking the tile to not cause infinite loops
+					gameManager.addToGameSummary(String.format("%s: [%d, %d] failed to move to [%d, %d].\n", gameManager.getPlayer(ARENA.getTileOwner(w1, w2)-1).getNicknameToken(), w1, w2, w3, w4));
 					
 				// if targetTile is not empty and it won't empty this turn
 				} else {
 					ARENA.setTileLockStatus(w1, w2, -1); //locking the tile
+					gameManager.addToGameSummary(String.format("%s: [%d, %d] failed to move to [%d, %d].\n", gameManager.getPlayer(ARENA.getTileOwner(w1, w2)-1).getNicknameToken(), w1, w2, w3, w4));
 				}
 			
 			// checks if two steps are needed
 			} else if (ifInRange(w1, w2, w3, w4, 2)) {
 				int[] stepRoad = {w1, w2, w3, w4, w3, w4}; 
 				stepRoad = findMidStep(stepRoad).clone();
-				if (stepRoad[2] == -1) {
+				if (stepRoad[2] == -1 || stepRoad[3] == -1) {
 					ARENA.setTileLockStatus(w1, w2, -1); //locking the tile, dropping the order, as there is no available mid-tiles
 				} else {
 					w3 = stepRoad[2]; 
@@ -534,12 +538,11 @@ public class Referee extends AbstractReferee {
 							ARENA.setTileValue(w1, w2, k, 0);
 						}
 						// update ENTITY_LIST
-						ARENA.getEntities().get(tempIndex).x = w3; 
-						ARENA.getEntities().get(tempIndex).y = w4;
+						ARENA.getEntities().get(tempIndex).setCoords(w3, w4);
 						
 						ARENA.raiseTileLockStatus(w3, w4); //rising ifLocked value after making one step out of two
 							 
-						gameManager.addToGameSummary(String.format("%s: entity [%s, %s] moved to [%d, %d].\n", gameManager.getPlayer(ARENA.getTileOwner(w3, w4)-1).getNicknameToken(), words[1], words[2], w3, w4));
+						gameManager.addToGameSummary(String.format("%s: [%d, %d] moved to [%d, %d].\n", gameManager.getPlayer(ARENA.getTileOwner(w3, w4)-1).getNicknameToken(), w1, w2, w3, w4));
 						
 						// after successfully moving one step - add second step to queue
 						movQ.addLast(String.format("MOVE %d %d %d %d", w3, w4, stepRoad[4], stepRoad[5]));
@@ -552,10 +555,13 @@ public class Referee extends AbstractReferee {
 					// if targetTile is not empty - but other entity has higher ifLocked count (likely a loop)
 					} else if (ARENA.getTileLockStatus(w1, w2) < ARENA.getTileLockStatus(w3, w4)) {
 						ARENA.setTileLockStatus(w1, w2, -1); //locking the tile to not cause infinite loops, dropping the order
+						gameManager.addToGameSummary(String.format("%s: [%d, %d] failed to move to [%d, %d].\n", gameManager.getPlayer(ARENA.getTileOwner(w1, w2)-1).getNicknameToken(), w1, w2, w3, w4));
+						
 							
 					// if targetTile is not empty and it won't empty this turn
 					} else {
 						ARENA.setTileLockStatus(w1, w2, -1); //locking the tile, dropping the order
+						gameManager.addToGameSummary(String.format("%s: [%d, %d] failed to move to [%d, %d].\n", gameManager.getPlayer(ARENA.getTileOwner(w1, w2)-1).getNicknameToken(), w1, w2, w3, w4));
 					}
 				}
 			} // else case needed if faster entity added or rework previous case to include entities with step > 1
@@ -598,7 +604,7 @@ public class Referee extends AbstractReferee {
 									ARENA.harvestTile(w3,w4);
 								}
 								p.addMaterial("GOLD", 1);
-								gameManager.addToGameSummary(String.format("%s: entity [%s, %s] got 1 GOLD from [%s, %s].\n", p.getNicknameToken(), words[1], words[2], words[3], words[4]));
+								gameManager.addToGameSummary(String.format("%s: [%d, %d] got 1 GOLD from [%d, %d].\n", p.getNicknameToken(), w1, w2, w3, w4));
 							}
 							
 						// WOOD
@@ -610,15 +616,15 @@ public class Referee extends AbstractReferee {
 									ARENA.harvestTile(w3,w4);
 								}
 								p.addMaterial("WOOD", 1);
-								gameManager.addToGameSummary(String.format("%s: entity [%s, %s] got 1 WOOD from [%s, %s].\n", p.getNicknameToken(), words[1], words[2], words[3], words[4]));	
+								gameManager.addToGameSummary(String.format("%s: [%d, %d] got 1 WOOD from [%d, %d].\n", p.getNicknameToken(), w1, w2, w3, w4));	
 							}
 						} else {
-							gameManager.addToGameSummary(String.format("%s: entity [%s, %s] failed to harvest from [%s, %s].\n", p.getNicknameToken(), words[1], words[2], words[3], words[4]));
+							gameManager.addToGameSummary(String.format("%s: [%d, %d] failed to harvest from [%d, %d].\n", p.getNicknameToken(), w1, w2, w3, w4));
 						}
 					}
 				}
 			} else {
-				gameManager.addToGameSummary(String.format("%s: entity [%s, %s] failed to harvest from [%s, %s]. Because, it's already depleted!\n", gameManager.getPlayer(ARENA.getTileOwner(w1, w2)-1).getNicknameToken(), words[1], words[2], words[3], words[4]));
+				gameManager.addToGameSummary(String.format("%s: [%d, %d] failed to harvest from [%d, %d]. Because, it's already depleted!\n", gameManager.getPlayer(ARENA.getTileOwner(w1, w2)-1).getNicknameToken(), w1, w2, w3, w4));
 			}
 		}
 		
@@ -644,7 +650,7 @@ public class Referee extends AbstractReferee {
 								attack = ARENA.getTileHealth(w3,w4);
 							} 
 							ARENA.attackTile(w3, w4, attack);
-							gameManager.addToGameSummary(String.format("%s: entity [%s, %s] took %d damage from [%s, %s].\n", p.getNicknameToken(), words[1], words[2], attack, words[3], words[4]));
+							gameManager.addToGameSummary(String.format("%s: [%d, %d] did %d damage to [%d, %d].\n", p.getNicknameToken(), w1, w2, attack, w3, w4));
 						}
 					}
 				}

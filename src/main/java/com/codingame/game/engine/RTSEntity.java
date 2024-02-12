@@ -15,6 +15,20 @@ public class RTSEntity {
 		this.actionCountdown = 0;
 		this.activeOrder = "WAIT";
 	}
+	public void setCoords(int x, int y){
+		this.x = x;
+		this.y = y;
+	}
+	public void setCountdown(int value){
+		this.actionCountdown = value;
+	}
+	public void countDown(){
+		this.actionCountdown -= 1;
+	}
+	public void setActiveOrder(String order){
+		this.activeOrder = order;
+	}
+	
 	public void addFirstOrder(String order) {
 		orders.addFirst(order);
 	}

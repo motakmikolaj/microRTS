@@ -1,8 +1,8 @@
-read width:int height:int startGold:int
+read width:int height:int
 loop 6 read entityType:int maxHP:int reach:int attack:int step:int goldCost:int woodCost:int
 
 gameloop
-read N:int
+read N:int gold:int wood:int enemyGold:int enemyWood:int
 loop N read x:int y:int owner:int entityType:int health:int
 
 write WAIT

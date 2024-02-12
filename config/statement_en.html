@@ -37,33 +37,33 @@
 		  <div class="blk">
 			  <div class="text">
 				  <div style="margin-bottom: 10px">
-					  <p>The game is played on a map <var>width</var> tiles wide and <var>height</var> tiles high. Each tile can only be occupied by one entity at the time - entities are defined as non-empty tiles: <b>units</b> and <b>buildings</b> owned by each player, but also <b>neutral tiles</b> like mines or walls.</p>
+					  <p>The game is played on a map <var>width</var> tiles wide and <var>height</var> tiles high, with [<const>0</const>, <const>0</const>] point being located in top-left corner. Each tile can only be occupied by one entity at a time - entities are defined as non-empty tiles: <b>units</b> and <b>buildings</b> owned by each player, but also <b>neutral tiles</b> like mines or walls.</p>
 					  
-					  <p>At the beginning of each turn players get a list of every entity on the map and information of their <var>x</var> and <var>y</var> position, <var>owner</var> identificator, <var>entityType</var> and <var>health</var>.</p>
+					  <p>At the beginning of each turn players get a list of every entity on the map and information of their <var>x</var> and <var>y</var> position, <var>owner</var> identifier, <var>entityType</var> and <var>health</var>.</p>
 					  
 					  <p>Each player starts with certain amount of <b>resources</b>, that can also be found on the map and need to be <b>harvested</b>. Those resources can be used for creation of different buildings and units.</p>
 
-					  <p><b>Orders</b> given by players have to be written according the rules and order syntax. Incorrect orders will result in immediate elimination of the player. If an order fits the criteria, but it's not possible to be executed, because of external reasons (like different unit blocking the way) - it will fail, without player's elimination. Every entity owned by players has only specific list of the orders it can execute. All actions can be done in all 8 directions. Entity is only limited by the free space, other entities, it's own <var>reach</var> and size of it's <var>step</var>.</p>
+					  <p><b>Orders</b> given by players have to be written according the rules and order syntax. Incorrect orders will result in immediate elimination of the player. If an order fits the criteria, but it's not possible to be executed, because of external reasons (like different unit blocking the way) - it will fail, without player's elimination. Every entity owned by players has only specific orders it can execute. All actions can be done in all 8 directions. Entity is only limited by the free space, other entities, its own <var>reach</var> and size of its <var>step</var>.</p>
 					  
-					  <p>Entities can only <b>move</b> into empty tiles or the tiles that will be emptied the same turn (for example, if occupied by different unit owned by the player, that will also move the same turn). Otherwise the order will fail to be executed, without eliminating the player.</p>
+					  <p>Entities can only <b>move</b> into empty tiles or the tiles that will be emptied the same turn (for example, if occupied by a different unit owned by the player, that will also move the same turn). Otherwise, the order will fail to be executed, without eliminating the player.</p>
 					  
-					  <p>Entity tiles can be sorted based on their owner and type:</p>
+					  <p>Entity tiles can be classified based on their owner and type:</p>
 				  </div>
 			  
 				  <h3 style="font-size: 14px;font-weight: 700;padding-top: 15px;color: #838891;padding-bottom: 15px;">
 					  <span>Neutral tiles</span>
 				  </h3>
 				  <div style="margin-bottom: 10px">
-					  <p>Neutral tiles have owner identificator value equal to <const>-1</const>. There are three types of those entities in this variant of the game:</p>
+					  <p>Neutral tiles have owner identifier value equal to <const>-1</const>. There are three types of those entities in this variant of the game:</p>
 					  <ul>
 						  <li>
-							  <b>Walls</b> - they are the main physical obstacle in the arena. If not defined differently, they are <b>unbreakable</b>, which means their base health is equal <const>-1</const>.
+							  <b>Walls</b> - they are the main physical obstacle in the arena. They are <b>unbreakable</b>, which means their base health is equal to <const>-1</const>.
 						  </li>
 						  <li>
-							  <b>Gold Mines</b> - source of <b>Gold</b>. Their health value defines the amount of resource left to be mined. When depleted - it disappears from the arena.
+							  <b>Gold Mines</b> - source of <b>Gold</b>. Their health value represents the amount of resource left to be mined. When depleted, it disappears from the arena.
 						  </li>
 						  <li>
-							  <b>Forests</b> - source of <b>Wood</b>. Their health value defines the amount of resource left to be logged. When depleted - it disappears from the arena.
+							  <b>Forests</b> - source of <b>Wood</b>. Their health value represents the amount of resource left to be logged. When depleted, it disappears from the arena.
 						  </li>
 					  </ul>
 				  </div>
@@ -72,7 +72,7 @@
 					  <span>Buildings</span>
 				  </h3>
 				  <div style="margin-bottom: 10px">
-					  <p>Buildings are part of player tiles so their <var>owner</var> corresponds to the player's ID (player = <const>0</const>, enemy = <const>1</const>). They can't <b>move</b> or <b>attack</b>, but they can <b>train</b> units in the range of their <var>reach</var>. Usually much more costly to be built than other entities.</p>
+					  <p>Buildings are part of player tiles so their <var>owner</var> corresponds to the player's ID (player = <const>0</const>, enemy = <const>1</const>). They can't <b>move</b> or <b>attack</b>, but they can <b>train</b> (i.e. create) units in the range of their <var>reach</var>. Usually much more costly to be built than other entities.</p>
 					  <ul>
 						  <li>
 							  <b>Castles</b> - pivotal building for each player. The player who doesn't have any castles left loses. They can train <b>Workers</b>.
@@ -108,7 +108,7 @@
 					  <span>Entity type data</span>
 				  </h3>
 				  <div class="text">
-					  <p>Each <var>entityType</var> has certain list of orders it can do within it's <var>reach</var>. Each entity can only do one order per turn.</p>
+					  <p>Each <var>entityType</var> has its own list of orders it can do within its <var>reach</var>. Each entity can only do one order per turn.</p>
 		  
 					  <ul>
 						  <li><b>CASTLE:</b> <action>TRAIN WORKER</action>
@@ -156,18 +156,17 @@
     <div class="blk">
       <div class="title">Initialization input</div>
       <div class="text">
-		<span class="statement-lineno">First line:</span> 3 integers seperated by a space:
+		<span class="statement-lineno">First line:</span> 2 integers separated by a space:
 		<ul>
 			<li><var>width</var> - width of the arena.</li>
 			<li><var>height</var> - height of the arena.</li>
-			<li><var>startGold</var> - the amount of <b>Gold</b> each player gets at the beginning of the game.</li>
 		</ul>
         <br>
-        <span class="statement-lineno">Next 6 lines:</span> 7 integers seperated by a space defining each player entity type:
+        <span class="statement-lineno">Next 6 lines:</span> 7 integers separated by a space defining each player entity type:
         <ul>
 			<li><var>entityType</var> - numerical value representing entity type.</li>
 			<li><var>maxHP</var> - maximum health entity can have.</li>
-			<li><var>reach</var> - the range in which entity can do all it's actions.</li>
+			<li><var>reach</var> - the range in which entity can do all its actions.</li>
 			<li><var>attack</var> - the amount of damage entity does when attacking.</li>
 			<li><var>step</var> - the amount of tiles entity can move in one turn.</li>
 			<li><var>costGold</var> - the amount of <b>Gold</b> needed to create this entity.</li>
@@ -181,13 +180,20 @@
     <div class="blk">
       <div class="title">Input for one game turn</div>
       <div class="text">
-		<span class="statement-lineno">First line:</span> 1 integer <var>N</var>, which represents the number of entities on the arena.
+        <span class="statement-lineno">First line:</span> 5 integers separated by a space:
+		<ul>
+			<li><var>N</var> - which represents the number of entities on the arena.</li>
+			<li><var>gold</var> - the amount of <b>Gold</b> player has at the beginning of the turn.</li>
+			<li><var>wood</var> - the amount of <b>Wood</b> player has at the beginning of the turn.</li>
+			<li><var>enemyGold</var> - the amount of <b>Gold</b> enemy has at the beginning of the turn.</li>
+			<li><var>enemyWood</var> - the amount of <b>Wood</b> enemy has at the beginning of the turn.</li>
+		</ul>
         <br>
-        <span class="statement-lineno">Next N lines:</span> 5 space-separated integers defining each entity on the arena:
+        <span class="statement-lineno">Next <var>N</var> lines:</span> 5 space-separated integers defining each entity on the arena:
         <ul>
 			<li><var>x</var> - x position of the entity.</li>
 			<li><var>y</var> - y position of the entity.</li>
-			<li><var>owner</var> - identificator for the owner of the entity:
+			<li><var>owner</var> - identifier for the owner of the entity:
 				<ul>
 					<li><const>-1:</const> neutral.</li>
 					<li><const>0:</const> player.</li>
@@ -233,10 +239,10 @@
     <div class="blk">
       <div class="title">Orders</div>
       <div class="text">
-		  <p>When writing "building" and "training" orders - for <var>entityType</var> both numerical and string values are acceptable (e.g. "CASTLE" or "0"). Some of the orders include pairs of coordinates: first pair always refers to the ordered entity and the other refers to the target entity or location.</p>
+		  <p>When writing "building" and "training" orders - for <var>entityType</var> both numerical and string values are acceptable (e.g. <const>CASTLE</const> or <const>0</const>). Some orders include pairs of coordinates: first pair always refers to the ordered entity and the other refers to the target entity or location.</p>
 		  <action>BUILD X Y tX tY [entityType]</action> - orders entity to construct a building at the target.
 		  <br>
-		  <action>TRAIN X Y tX tY [entityType]</action> - orders entity to train an unit at the target.
+		  <action>TRAIN X Y tX tY [entityType]</action> - orders entity to train a unit at the target.
 		  <br>
 		  <action>MOVE X Y tX tY</action> - moves unit from one point to the other.
 		  <br>
