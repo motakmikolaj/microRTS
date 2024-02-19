@@ -138,7 +138,7 @@
 				  <div style="margin-bottom: 10px">
 					  <p>Each turn players sent one line consisting of semi-colon separated orders. Then referee checks their validity and then commits them in priority order of: building > training > moving > harvesting > attacking.</p>
 					  <p>Any movement that can't be done immediately is then pushed to the end of the "move" queue, this repeats until the queue is empty or no more units can move. After "moving" phase any remaining "building" or "training" orders that weren't possible before, will be considered once again.</p>
-					  <p>Conflicting orders are executed in random order, if not possible to be executed at the same time. In case of two units attacking each other - both of them get damaged.</p>
+					  <p>Conflicting orders of the same priority are blocked, if not possible to be executed at the same time. In case of two units attacking each other - both of them get damaged.</p>
 					  <p>Then referee cleans any defeated entities and depleted resources off the arena and checks, if any of the end conditions are met.</p>
 				  </div>
 			  </div>

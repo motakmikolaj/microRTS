@@ -462,82 +462,111 @@ public class Referee extends AbstractReferee {
 				}
 			}
 		}
+						
+		// xy: 0 - block, 1 - block build, 2 - build, 3 - block train, 4 - train, 5 - block move, 6 - move, 7 - none 
+		// (if there is event of higher priority - dont do others - put block if there is one on the same priority)
+		int [][] orderConflictArray = new int[Constants.WIDTH_TILES][Constants.HEIGHT_TILES];
+		for (int i = 0; i < Constants.WIDTH_TILES; i++){
+			for(int j = 0; j < Constants.HEIGHT_TILES; j++){
+				orderConflictArray[i][j] = 7;
+			}
+		}
+		int conflictX = -1;
+		int conflictY = -1;
+		
+		// build orders
+		for (int i = 0; i < bldQ.size(); i++){
+			String order = bldQ.getFirst();
+			conflictX = Integer.valueOf(order.split(" ")[3]);
+			conflictY = Integer.valueOf(order.split(" ")[4]);
+			if (orderConflictArray[conflictX][conflictY] <= 2){ // already other build order
+				orderConflictArray[conflictX][conflictY] = 1;
+				bldQ.removeFirst();
+			} else { // only other non-build orders
+				orderConflictArray[conflictX][conflictY] = 2;
+				bldQ.removeFirst();
+				bldQ.addLast(order);
+			}
+		}
+		
+		// train orders
+		for (int i = 0; i < trnQ.size(); i++){
+			String order = trnQ.getFirst();
+			conflictX = Integer.valueOf(order.split(" ")[3]);
+			conflictY = Integer.valueOf(order.split(" ")[4]);
+			if (orderConflictArray[conflictX][conflictY] <= 3){ // already other order of higher priority
+				trnQ.removeFirst();
+			} else if (orderConflictArray[conflictX][conflictY] == 4){ // already other train order
+				orderConflictArray[conflictX][conflictY] = 3;
+				trnQ.removeFirst();
+			} else { // only other non-train or build orders
+				orderConflictArray[conflictX][conflictY] = 4;
+				trnQ.removeFirst();
+				trnQ.addLast(order);
+			}
+		}
+		
+		// move orders
+		for (int i = 0; i < movQ.size(); i++){
+			String order = movQ.getFirst();
+			conflictX = Integer.valueOf(order.split(" ")[3]);
+			conflictY = Integer.valueOf(order.split(" ")[4]);
+			if (orderConflictArray[conflictX][conflictY] <= 5){ // already other order of higher priority
+				movQ.removeFirst();
+			} else if (orderConflictArray[conflictX][conflictY] == 6){ // already other move order
+				orderConflictArray[conflictX][conflictY] = 5;
+				movQ.removeFirst();
+			} else { // only when no other order
+				orderConflictArray[conflictX][conflictY] = 6;
+				movQ.removeFirst();
+				movQ.addLast(order);
+			}
+		}
+		
 		// execute all possible BUILD orders
 		while(!bldQ.isEmpty()) {
 			// ===== BUILD X Y tX tY eT =====
 			String order = bldQ.getFirst();
 			bldQ.removeFirst();
-			// execute order, if possible (try again, if tile may empty before the end of the turn).
-			if (executeBuildTrain(order) == 1) bl2Q.addLast(order);
+			conflictX = Integer.valueOf(order.split(" ")[3]);
+			conflictY = Integer.valueOf(order.split(" ")[4]);
+			if (orderConflictArray[conflictX][conflictY] >= 2){ // execute if not blocked
+				// execute order, if possible (try again, if tile may empty before the end of the turn).
+				if (executeBuildTrain(order) == 1) bl2Q.addLast(order);
+			}
 		}
 		// execute all possible TRAIN orders
 		while(!trnQ.isEmpty()) {
 			// ===== TRAIN X Y tX tY eT =====
 			String order = trnQ.getFirst();
 			trnQ.removeFirst();
-			// execute order, if possible (try again, if tile may empty before the end of the turn).
-			if (executeBuildTrain(order) == 1) tr2Q.addLast(order);
+			conflictX = Integer.valueOf(order.split(" ")[3]);
+			conflictY = Integer.valueOf(order.split(" ")[4]);
+			if (orderConflictArray[conflictX][conflictY] >= 4){ // execute if not blocked
+				// execute order, if possible (try again, if tile may empty before the end of the turn).
+				if (executeBuildTrain(order) == 1) tr2Q.addLast(order);
+			}
 		}
 		// execute all possible MOVE orders
 		while(!movQ.isEmpty()) {
 			// ===== MOVE X Y tX tY =====
 			String order = movQ.getFirst();
 			movQ.removeFirst();
-			
 			String[] words = order.split(" ");
 			int w1 = Integer.valueOf(words[1]), w2 = Integer.valueOf(words[2]); // playerEntity
 			int w3 = Integer.valueOf(words[3]), w4 = Integer.valueOf(words[4]); // targetEntity
- 
-			int step      = arena.getTileStep(w1,w2);                                                  //entityStep
-			int tempIndex = arena.findRTSEntity(Integer.valueOf(words[1]), Integer.valueOf(words[2])); //entityIndex	
 			
-			if (tempIndex == -1) { 
-				gameManager.getPlayer(arena.getTileOwner(w1, w2)-1).deactivate("Unknown error: not properly initialised or changed entity! Contact the author!");
+			if (orderConflictArray[w3][w4] >= 6){ // execute if not blocked
+				int step      = arena.getTileStep(w1,w2);                                                  //entityStep
+				int tempIndex = arena.findRTSEntity(Integer.valueOf(words[1]), Integer.valueOf(words[2])); //entityIndex	
 				
-			// checks if one step is needed
-			} else if (ifInRange(w1, w2, w3, w4, 1)) {		
-				// if targetTile is empty, in range and accessible by walking
-				if (arena.isTileEmpty(w3,w4)) {
-					// update arena_MAP tiles
-					for (int k = 0; k < 5; k++) {
-						arena.setTileValue(w3, w4, k, arena.getTileValue(w1, w2, k));
-						arena.setTileValue(w1, w2, k, 0);
-					}
-					// update ENTITY_LIST
-					arena.getEntities().get(tempIndex).setCoords(w3, w4);
+				if (tempIndex == -1) { 
+					gameManager.getPlayer(arena.getTileOwner(w1, w2)-1).deactivate("Unknown error: not properly initialised or changed entity! Contact the author!");
 					
-					arena.setTileLockStatus(w3, w4, -1); //locking target tile after making move
-					 
-					//gameManager.addToGameSummary(String.format("%s: entity [%s, %s] moved to [%s, %s].\n", gameManager.getPlayer(arena.getTileOwner(w3, w4)-1).getNicknameToken(), words[1], words[2], words[3], words[4]));
-								
-				// if targetTile is not empty - but other entity may move this turn, emptying it
-				} else if (arena.getTileLockStatus(w1, w2) == arena.getTileLockStatus(w3, w4)) {
-					arena.raiseTileLockStatus(w1, w2); //raising the ifLocked count, may still move after others
-					movQ.addLast(order);
-					
-				// if targetTile is not empty - but other entity has higher ifLocked count (likely a loop)
-				} else if (arena.getTileLockStatus(w1, w2) < arena.getTileLockStatus(w3, w4)) {
-					arena.setTileLockStatus(w1, w2, -1); //locking the tile to not cause infinite loops
-					gameManager.addToGameSummary(String.format("%s: [%d, %d] failed to move to [%d, %d].\n", gameManager.getPlayer(arena.getTileOwner(w1, w2)-1).getNicknameToken(), w1, w2, w3, w4));
-					
-				// if targetTile is not empty and it won't empty this turn
-				} else {
-					arena.setTileLockStatus(w1, w2, -1); //locking the tile
-					gameManager.addToGameSummary(String.format("%s: [%d, %d] failed to move to [%d, %d].\n", gameManager.getPlayer(arena.getTileOwner(w1, w2)-1).getNicknameToken(), w1, w2, w3, w4));
-				}
-			
-			// checks if two steps are needed
-			} else if (ifInRange(w1, w2, w3, w4, 2)) {
-				int[] stepRoad = {w1, w2, w3, w4, w3, w4}; 
-				stepRoad = findMidStep(stepRoad).clone();
-				if (stepRoad[2] == -1 || stepRoad[3] == -1) {
-					arena.setTileLockStatus(w1, w2, -1); //locking the tile, dropping the order, as there is no available mid-tiles
-				} else {
-					w3 = stepRoad[2]; 
-					w4 = stepRoad[3];
-
+				// checks if one step is needed
+				} else if (ifInRange(w1, w2, w3, w4, 1)) {		
 					// if targetTile is empty, in range and accessible by walking
-					if (arena.isTileEmpty(w3, w4)) {
+					if (arena.isTileEmpty(w3,w4)) {
 						// update arena_MAP tiles
 						for (int k = 0; k < 5; k++) {
 							arena.setTileValue(w3, w4, k, arena.getTileValue(w1, w2, k));
@@ -546,31 +575,72 @@ public class Referee extends AbstractReferee {
 						// update ENTITY_LIST
 						arena.getEntities().get(tempIndex).setCoords(w3, w4);
 						
-						arena.raiseTileLockStatus(w3, w4); //rising ifLocked value after making one step out of two
-							 
-						gameManager.addToGameSummary(String.format("%s: [%d, %d] moved to [%d, %d].\n", gameManager.getPlayer(arena.getTileOwner(w3, w4)-1).getNicknameToken(), w1, w2, w3, w4));
-						
-						// after successfully moving one step - add second step to queue
-						movQ.addLast(String.format("MOVE %d %d %d %d", w3, w4, stepRoad[4], stepRoad[5]));
-										
+						arena.setTileLockStatus(w3, w4, -1); //locking target tile after making move
+						 
+						//gameManager.addToGameSummary(String.format("%s: entity [%s, %s] moved to [%s, %s].\n", gameManager.getPlayer(arena.getTileOwner(w3, w4)-1).getNicknameToken(), words[1], words[2], words[3], words[4]));
+									
 					// if targetTile is not empty - but other entity may move this turn, emptying it
 					} else if (arena.getTileLockStatus(w1, w2) == arena.getTileLockStatus(w3, w4)) {
-						arena.raiseTileLockStatus(w1, w2); // rising the ifLocked count, may still move after others
-						movQ.addLast(order);               // putting back full order until the mid-tile is free
-							
+						arena.raiseTileLockStatus(w1, w2); //raising the ifLocked count, may still move after others
+						movQ.addLast(order);
+						
 					// if targetTile is not empty - but other entity has higher ifLocked count (likely a loop)
 					} else if (arena.getTileLockStatus(w1, w2) < arena.getTileLockStatus(w3, w4)) {
-						arena.setTileLockStatus(w1, w2, -1); //locking the tile to not cause infinite loops, dropping the order
+						arena.setTileLockStatus(w1, w2, -1); //locking the tile to not cause infinite loops
 						gameManager.addToGameSummary(String.format("%s: [%d, %d] failed to move to [%d, %d].\n", gameManager.getPlayer(arena.getTileOwner(w1, w2)-1).getNicknameToken(), w1, w2, w3, w4));
 						
-							
 					// if targetTile is not empty and it won't empty this turn
 					} else {
-						arena.setTileLockStatus(w1, w2, -1); //locking the tile, dropping the order
+						arena.setTileLockStatus(w1, w2, -1); //locking the tile
 						gameManager.addToGameSummary(String.format("%s: [%d, %d] failed to move to [%d, %d].\n", gameManager.getPlayer(arena.getTileOwner(w1, w2)-1).getNicknameToken(), w1, w2, w3, w4));
 					}
-				}
-			} // else case needed if faster entity added or rework previous case to include entities with step > 1
+				
+				// checks if two steps are needed
+				} else if (ifInRange(w1, w2, w3, w4, 2)) {
+					int[] stepRoad = {w1, w2, w3, w4, w3, w4}; 
+					stepRoad = findMidStep(stepRoad).clone();
+					if (stepRoad[2] == -1 || stepRoad[3] == -1) {
+						arena.setTileLockStatus(w1, w2, -1); //locking the tile, dropping the order, as there is no available mid-tiles
+					} else {
+						w3 = stepRoad[2]; 
+						w4 = stepRoad[3];
+
+						// if targetTile is empty, in range and accessible by walking
+						if (arena.isTileEmpty(w3, w4)) {
+							// update arena_MAP tiles
+							for (int k = 0; k < 5; k++) {
+								arena.setTileValue(w3, w4, k, arena.getTileValue(w1, w2, k));
+								arena.setTileValue(w1, w2, k, 0);
+							}
+							// update ENTITY_LIST
+							arena.getEntities().get(tempIndex).setCoords(w3, w4);
+							
+							arena.raiseTileLockStatus(w3, w4); //rising ifLocked value after making one step out of two
+								 
+							gameManager.addToGameSummary(String.format("%s: [%d, %d] moved to [%d, %d].\n", gameManager.getPlayer(arena.getTileOwner(w3, w4)-1).getNicknameToken(), w1, w2, w3, w4));
+							
+							// after successfully moving one step - add second step to queue
+							movQ.addLast(String.format("MOVE %d %d %d %d", w3, w4, stepRoad[4], stepRoad[5]));
+											
+						// if targetTile is not empty - but other entity may move this turn, emptying it
+						} else if (arena.getTileLockStatus(w1, w2) == arena.getTileLockStatus(w3, w4)) {
+							arena.raiseTileLockStatus(w1, w2); // rising the ifLocked count, may still move after others
+							movQ.addLast(order);               // putting back full order until the mid-tile is free
+								
+						// if targetTile is not empty - but other entity has higher ifLocked count (likely a loop)
+						} else if (arena.getTileLockStatus(w1, w2) < arena.getTileLockStatus(w3, w4)) {
+							arena.setTileLockStatus(w1, w2, -1); //locking the tile to not cause infinite loops, dropping the order
+							gameManager.addToGameSummary(String.format("%s: [%d, %d] failed to move to [%d, %d].\n", gameManager.getPlayer(arena.getTileOwner(w1, w2)-1).getNicknameToken(), w1, w2, w3, w4));
+							
+								
+						// if targetTile is not empty and it won't empty this turn
+						} else {
+							arena.setTileLockStatus(w1, w2, -1); //locking the tile, dropping the order
+							gameManager.addToGameSummary(String.format("%s: [%d, %d] failed to move to [%d, %d].\n", gameManager.getPlayer(arena.getTileOwner(w1, w2)-1).getNicknameToken(), w1, w2, w3, w4));
+						}
+					}
+				} // else case needed if faster entity added or rework previous case to include entities with step > 1
+			}
 		}
 		// execute all remaining BUILD orders
 		while(!bl2Q.isEmpty()) {
