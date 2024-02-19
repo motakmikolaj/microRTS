@@ -85,47 +85,121 @@ public class Arena {
 		int stepped              = 0;                  //this is how long corridors can be
 		int orthogonalAllowed    = 0;                  //orthogonal movement allowed? If not, it carves a wider cooridor on diagonal
 		
+		ArrayList<Integer> viableX = new ArrayList<Integer>();
+		ArrayList<Integer> viableY = new ArrayList<Integer>();
+		int[][] frozenArena = new int[sizeX][sizeY];
+		
+		for(int i = 0; i < sizeX; i++){
+			for(int j = 0; j < sizeY; j++){
+				if(i == 0 || j == 0 || j == sizeY-1) {
+					frozenArena[i][j] = 1; //freeze border
+				} else {
+					frozenArena[i][j] = 0; //unfreeze all elements
+				}
+			}
+		}
+		
 		// expanding the seed
 		int rootYExpansion = rng.nextInt(sizeY);
 		for(int i = 0; i < rootYExpansion; i++){
 			if (rootY - i > 0) {
 				for (int k = 0; k < 5; k++){
-					arena_map[sizeX-1][rootY - i][k] = 0;
+					arena_map[sizeX - 1][rootY - i][k] = 0;
 				}
 				allocatedBlocks++;
 			}
 			if (rootY + i < sizeY - 1) {
 				for (int k = 0; k < 5; k++){
-					arena_map[sizeX-1][rootY + i][k] = 0;
+					arena_map[sizeX - 1][rootY + i][k] = 0;
 				}
 				allocatedBlocks++;
 			}
 		}
-		
+		int checkFrost = 0;
+		int viablePointer = 0;
 		// The Diffusion Limited Aggregation Loop
-		while (allocatedBlocks < (2*(sizeX*sizeY)/5) ){  //quit when 40% of the map is filled
+		while (allocatedBlocks < (6*(sizeX*sizeY)/10) ){  //quit when 60% of the map is filled
 			if (builderSpawned != 1){
-				//spawn at random position
-				cx = rng.nextInt(sizeX - 2) + 1;
-				cy = rng.nextInt(sizeY - 2) + 1;
+				viableX.clear();
+				viableY.clear();
 				
-				//see if builder is ontop of expanded root
-				if (Math.abs(rootX - cx) <= 0 && Math.abs(rootY - cy) <= rootYExpansion){
-					//builder was spawned too close to root, clear that floor and respawn
+				for(int i = 1; i < sizeX; i++){
+					for(int j = 1; j < sizeY; j++){
+						checkFrost = 0;
+						// for each cleared tile add all viable neighbours of unfrozen tiles
+						if (arena_map[i][j][1] == 0 && frozenArena[i][j] == 0){
+							if (arena_map[i][j-1][1] != 0 && j-1 > 0) { // North
+								viableX.add(i);
+								viableY.add(j-1);
+								checkFrost += 1;
+							}
+							if (arena_map[i+1][j-1][1] != 0 && j-1 > 0 && i+1 < sizeX) { // North-East
+								viableX.add(i+1);
+								viableY.add(j-1);
+								checkFrost += 1;
+							}
+							if (arena_map[i+1][j][1] != 0 && i+1 < sizeX) { // East
+								viableX.add(i+1);
+								viableY.add(j);
+								checkFrost += 1;
+							}
+							if (arena_map[i+1][j+1][1] != 0 && j+1 < sizeY -1 && i+1 < sizeX) { // South-East
+								viableX.add(i+1);
+								viableY.add(j+1);
+								checkFrost += 1;
+							}
+							if (arena_map[i][j+1][1] != 0 && j+1 < sizeY - 1) { // South
+								viableX.add(i);
+								viableY.add(j+1);
+								checkFrost += 1;
+							}
+							if (arena_map[i-1][j+1][1] != 0 && j+1 < sizeY - 1 && i-1 > 0) { // South-West
+								viableX.add(i-1);
+								viableY.add(j+1);
+								checkFrost += 1;
+							}
+							if (arena_map[i-1][j][1] != 0 && i-1 > 0) { // West
+								viableX.add(i-1);
+								viableY.add(j);
+								checkFrost += 1;
+							}
+							if (arena_map[i-1][j-1][1] != 0 && j-1 > 0 && i-1 > 0) { // North-West
+								viableX.add(i-1);
+								viableY.add(j-1);
+								checkFrost += 1;
+							}
+							if (checkFrost == 0){
+								frozenArena[i][j] = 1; // freeze if has no accessible neighbours
+							}
+						}
+					}
+				}
+				if (viableX.size() < 1) {
+					break;
+				} else {
+					viablePointer = rng.nextInt(viableX.size());
+				
+					//spawn at random viable position
+					cx = viableX.get(viablePointer);
+					cy = viableY.get(viablePointer);
+					
+					//cx = rng.nextInt(sizeX - 2) + 1;
+					//cy = rng.nextInt(sizeY - 2) + 1;
+					
+					//see if builder is ontop of tree
 					if (arena_map[cx][cy][1] != 0){
 						clearTile(cx,cy);
 						allocatedBlocks++;
+						builderSpawned = 1;
+						builderMoveDirection = rng.nextInt(8);
+						stepped = 0;
 					}
-				} else {
-					builderSpawned = 1;
-					builderMoveDirection = rng.nextInt(8);
-					stepped = 0;
+					
 				}
-			
-			
+				
 			//builder already spawned and knows it's direction, move builder
 			} else { 
-				if (builderMoveDirection == 0 && cy > 1){
+				if (builderMoveDirection        == 0 && cy > 1){
 					cy--; stepped++;       // North
 					
 				} else if (builderMoveDirection == 1 && cx < sizeX - 1){
@@ -135,7 +209,7 @@ public class Arena {
 					cy++; stepped++;       // South
 					
 				} else if (builderMoveDirection == 3 && cx > 1){
-					cx++; stepped++;       // West
+					cx--; stepped++;       // West
 					
 				} else if (builderMoveDirection == 4 && cx < sizeX - 1 && cy > 1){
 					cy--; cx++; stepped++; // North-East
@@ -155,27 +229,32 @@ public class Arena {
 				if (cx < sizeX - 1 && cy < sizeY - 1 && cx > 1 && cy > 1 && stepped <= 5){
 					if (arena_map[cx+1][cy][1] == 0){          // East
 						if (arena_map[cx][cy][1] != 0){
-							clearTile(cx,cy); allocatedBlocks++;
+							clearTile(cx,cy);
+							allocatedBlocks++;
 						} 
 						
 					} else if (arena_map[cx-1][cy][1] == 0){   // West
 						if (arena_map[cx][cy][1] != 0){
-							clearTile(cx,cy); allocatedBlocks++;
+							clearTile(cx,cy); 
+							allocatedBlocks++;
 						} 
 						
 					} else if (arena_map[cx][cy+1][1] == 0){   // South
 						if (arena_map[cx][cy][1] != 0){
-							clearTile(cx,cy); allocatedBlocks++;
+							clearTile(cx,cy); 
+							allocatedBlocks++;
 						}
 						
 					} else if (arena_map[cx][cy-1][1] == 0){   // North
 						if (arena_map[cx][cy][1] != 0){
-							clearTile(cx,cy); allocatedBlocks++;
+							clearTile(cx,cy); 
+							allocatedBlocks++;
 						}
 							
 					} else if (arena_map[cx+1][cy-1][1] == 0){ // North-East
 						if (arena_map[cx][cy][1] != 0){
-							clearTile(cx,cy); allocatedBlocks++; 
+							clearTile(cx,cy); 
+							allocatedBlocks++; 
 							if (orthogonalAllowed == 0){
 								clearTile(cx+1, cy); allocatedBlocks++;
 							}
@@ -183,7 +262,8 @@ public class Arena {
 						
 					} else if (arena_map[cx+1][cy+1][1] == 0){ // South-East
 						if (arena_map[cx][cy][1] != 0){
-							clearTile(cx,cy); allocatedBlocks++; 
+							clearTile(cx,cy); 
+							allocatedBlocks++; 
 							if (orthogonalAllowed == 0){
 								clearTile(cx+1, cy); allocatedBlocks++;
 							}
@@ -191,7 +271,8 @@ public class Arena {
 						
 					} else if (arena_map[cx-1][cy+1][1] == 0){ // South-West
 						if (arena_map[cx][cy][1] != 0){
-							clearTile(cx,cy); allocatedBlocks++; 
+							clearTile(cx,cy); 
+							allocatedBlocks++; 
 							if (orthogonalAllowed == 0){
 								clearTile(cx-1, cy); allocatedBlocks++;
 							}
@@ -199,7 +280,8 @@ public class Arena {
 						
 					} else if (arena_map[cx-1][cy-1][1] == 0){ // North-West
 						if (arena_map[cx][cy][1] != 0){
-							clearTile(cx,cy); allocatedBlocks++; 
+							clearTile(cx,cy); 
+							allocatedBlocks++; 
 							if (orthogonalAllowed == 0){
 								clearTile(cx-1, cy); allocatedBlocks++;
 							}
