@@ -70,6 +70,7 @@ public class Arena {
 		}
 	}
 	private void generateArena(Random rng){
+		//gameManager.addToGameSummary("GENERATE");
 		// Main Mapping Variables & declarations
 		int sizeX = (int) Math.ceil((double) width_tiles / 2);
 		int sizeY = height_tiles;
@@ -100,21 +101,20 @@ public class Arena {
 		}
 		
 		// expanding the seed
-		int rootYExpansion = rng.nextInt(sizeY);
+		int rootYExpansion = rng.nextInt(sizeY-1)+1;
 		for(int i = 0; i < rootYExpansion; i++){
 			if (rootY - i > 0) {
-				for (int k = 0; k < 5; k++){
-					arena_map[sizeX - 1][rootY - i][k] = 0;
-				}
+				clearTile(rootX,rootY-i);
 				allocatedBlocks++;
 			}
 			if (rootY + i < sizeY - 1) {
-				for (int k = 0; k < 5; k++){
-					arena_map[sizeX - 1][rootY + i][k] = 0;
-				}
+				clearTile(rootX,rootY+i);
 				allocatedBlocks++;
 			}
 		}
+		
+		//gameManager.addToGameSummary(String.format("rootblocks: %d %d %d | %d %d %d", allocatedBlocks, rootX, rootY, frozenArena[rootX][rootY], arena_map[rootX][rootY][1], rootYExpansion));
+											
 		int checkFrost = 0;
 		int viablePointer = 0;
 		// The Diffusion Limited Aggregation Loop
@@ -175,6 +175,7 @@ public class Arena {
 					}
 				}
 				if (viableX.size() < 1) {
+					//gameManager.addToGameSummary("OOPSIE");
 					break;
 				} else {
 					viablePointer = rng.nextInt(viableX.size());

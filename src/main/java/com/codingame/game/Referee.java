@@ -132,6 +132,7 @@ public class Referee extends AbstractReferee {
         arena = new Arena(gameManager, graphicEntityModule, tooltips);
         
         rng = new Random(gameManager.getSeed());
+        //rng = new Random(-2826428385550016000L);
         
         arena.initArena(rng);
         
