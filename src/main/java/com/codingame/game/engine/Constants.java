@@ -19,9 +19,6 @@ public class Constants {
 	public static final int MIN_WIDTH_TILES  = 10; // 10 
 	public static final int MIN_HEIGHT_TILES = 10; // 10
 	
-	public static int WIDTH_TILES  = 32; // default
-	public static int HEIGHT_TILES = 18; // default
-	
 	// ====================
 	// Base Entity Data
 	// ====================

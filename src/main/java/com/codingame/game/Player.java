@@ -10,6 +10,8 @@ public class Player extends AbstractMultiplayerPlayer {
 	
 	public HashMap<String, Integer> materials = new HashMap<String, Integer>();
 	
+	public int matScore = 0;
+	
 	public void initMaterial(String name, int amount) {
 		this.materials.put(name, amount);
 	}
@@ -25,6 +27,13 @@ public class Player extends AbstractMultiplayerPlayer {
 	}
 	public int wood() {
 		return this.materials.get("WOOD");
+	}
+	
+	public void setmatScore(int amount){
+		this.matScore = amount;
+	}
+	public int getmatScore(){
+		return this.matScore;
 	}
 	
     public String[] getAction() throws TimeoutException {

@@ -29,7 +29,7 @@ public class Arena {
 	private GraphicEntityModule graphicEntityModule;
 	private TooltipModule tooltips;
 	
-	// ARENA_MAP  : 3D Array [WIDTH_TILES][HEIGHT_TILES][5]:
+	// arena_map  : 3D Array [WIDTH_TILES][HEIGHT_TILES][5]:
     // ==============================
     // ownerID    : 0 = neutral, 1 = player[0], 2 = player[1]  | when passed to players (id = id-1)
     // entityType : 0 = CASTLE,  1 = BARRACKS,  2 = WORKER, 3 = LIGHT, 4 = HEAVY, 5 = RANGED
@@ -38,13 +38,16 @@ public class Arena {
     // ifLocked   : used for movement calculations, shields against loops: -1: locked, 0 unlocked, 0 < n waiting n turns to move
     // ** entityType for neutral : 0 = empty, 1 = wall, 2 = mine, 3 = forest
     
-    public int[][][]              ARENA_MAP;
-    public HashMap<String, int[]> ENTITY_TYPES = new HashMap<String, int[]>();
-    public ArrayList<RTSEntity>   ENTITY_LIST  = new ArrayList<RTSEntity>();
+    public int width_tiles;  // default
+	public int height_tiles; // default
+	
+    public int[][][]              arena_map;
+    public HashMap<String, int[]> entity_types = new HashMap<String, int[]>();
+    public ArrayList<RTSEntity>   entity_list  = new ArrayList<RTSEntity>();
     
-    public Sprite[][] ARENA_MAP_SPRITES;
-    public Text[][]   ARENA_MAP_TEXT;
-    public int[][]    TOOLTIPS_CHECK;
+    public Sprite[][] arena_map_sprites;
+    public Text[][]   arena_map_text;
+    public int[][]    tooltips_check;
     public int paddingL = 0;
     public int paddingT = 0;
     
@@ -57,19 +60,19 @@ public class Arena {
     // (name), (entityType/maxHP), (reach/attack/step), (goldCost/woodCost)
 	private void initEntityTypes(){
 		for (int i = 0; i < Constants.ENTITY_TYPES_NAMES.length; i++) {
-			ENTITY_TYPES.put(Constants.ENTITY_TYPES_NAMES[i], Constants.ENTITY_TYPES_DATA[i].clone());
+			entity_types.put(Constants.ENTITY_TYPES_NAMES[i], Constants.ENTITY_TYPES_DATA[i].clone());
 		}
 	}
 	
 	private void clearTile(int i, int j){
 		for (int k = 0; k < 5; k++){
-			ARENA_MAP[i][j][k] = 0;
+			arena_map[i][j][k] = 0;
 		}
 	}
 	private void generateArena(Random rng){
 		// Main Mapping Variables & declarations
-		int sizeX = (int) Math.ceil((double) Constants.WIDTH_TILES / 2);
-		int sizeY = Constants.HEIGHT_TILES;
+		int sizeX = (int) Math.ceil((double) width_tiles / 2);
+		int sizeY = height_tiles;
 		
 		int x = -1, y = -1, cx = -1, cy = -1;
 		
@@ -87,13 +90,13 @@ public class Arena {
 		for(int i = 0; i < rootYExpansion; i++){
 			if (rootY - i > 0) {
 				for (int k = 0; k < 5; k++){
-					ARENA_MAP[sizeX-1][rootY - i][k] = 0;
+					arena_map[sizeX-1][rootY - i][k] = 0;
 				}
 				allocatedBlocks++;
 			}
 			if (rootY + i < sizeY - 1) {
 				for (int k = 0; k < 5; k++){
-					ARENA_MAP[sizeX-1][rootY + i][k] = 0;
+					arena_map[sizeX-1][rootY + i][k] = 0;
 				}
 				allocatedBlocks++;
 			}
@@ -109,7 +112,7 @@ public class Arena {
 				//see if builder is ontop of expanded root
 				if (Math.abs(rootX - cx) <= 0 && Math.abs(rootY - cy) <= rootYExpansion){
 					//builder was spawned too close to root, clear that floor and respawn
-					if (ARENA_MAP[cx][cy][1] != 0){
+					if (arena_map[cx][cy][1] != 0){
 						clearTile(cx,cy);
 						allocatedBlocks++;
 					}
@@ -150,52 +153,52 @@ public class Arena {
 				
 				// ensure that the builder is touching an existing spot
 				if (cx < sizeX - 1 && cy < sizeY - 1 && cx > 1 && cy > 1 && stepped <= 5){
-					if (ARENA_MAP[cx+1][cy][1] == 0){          // East
-						if (ARENA_MAP[cx][cy][1] != 0){
+					if (arena_map[cx+1][cy][1] == 0){          // East
+						if (arena_map[cx][cy][1] != 0){
 							clearTile(cx,cy); allocatedBlocks++;
 						} 
 						
-					} else if (ARENA_MAP[cx-1][cy][1] == 0){   // West
-						if (ARENA_MAP[cx][cy][1] != 0){
+					} else if (arena_map[cx-1][cy][1] == 0){   // West
+						if (arena_map[cx][cy][1] != 0){
 							clearTile(cx,cy); allocatedBlocks++;
 						} 
 						
-					} else if (ARENA_MAP[cx][cy+1][1] == 0){   // South
-						if (ARENA_MAP[cx][cy][1] != 0){
+					} else if (arena_map[cx][cy+1][1] == 0){   // South
+						if (arena_map[cx][cy][1] != 0){
 							clearTile(cx,cy); allocatedBlocks++;
 						}
 						
-					} else if (ARENA_MAP[cx][cy-1][1] == 0){   // North
-						if (ARENA_MAP[cx][cy][1] != 0){
+					} else if (arena_map[cx][cy-1][1] == 0){   // North
+						if (arena_map[cx][cy][1] != 0){
 							clearTile(cx,cy); allocatedBlocks++;
 						}
 							
-					} else if (ARENA_MAP[cx+1][cy-1][1] == 0){ // North-East
-						if (ARENA_MAP[cx][cy][1] != 0){
+					} else if (arena_map[cx+1][cy-1][1] == 0){ // North-East
+						if (arena_map[cx][cy][1] != 0){
 							clearTile(cx,cy); allocatedBlocks++; 
 							if (orthogonalAllowed == 0){
 								clearTile(cx+1, cy); allocatedBlocks++;
 							}
 						}
 						
-					} else if (ARENA_MAP[cx+1][cy+1][1] == 0){ // South-East
-						if (ARENA_MAP[cx][cy][1] != 0){
+					} else if (arena_map[cx+1][cy+1][1] == 0){ // South-East
+						if (arena_map[cx][cy][1] != 0){
 							clearTile(cx,cy); allocatedBlocks++; 
 							if (orthogonalAllowed == 0){
 								clearTile(cx+1, cy); allocatedBlocks++;
 							}
 						}
 						
-					} else if (ARENA_MAP[cx-1][cy+1][1] == 0){ // South-West
-						if (ARENA_MAP[cx][cy][1] != 0){
+					} else if (arena_map[cx-1][cy+1][1] == 0){ // South-West
+						if (arena_map[cx][cy][1] != 0){
 							clearTile(cx,cy); allocatedBlocks++; 
 							if (orthogonalAllowed == 0){
 								clearTile(cx-1, cy); allocatedBlocks++;
 							}
 						}
 						
-					} else if (ARENA_MAP[cx-1][cy-1][1] == 0){ // North-West
-						if (ARENA_MAP[cx][cy][1] != 0){
+					} else if (arena_map[cx-1][cy-1][1] == 0){ // North-West
+						if (arena_map[cx][cy][1] != 0){
 							clearTile(cx,cy); allocatedBlocks++; 
 							if (orthogonalAllowed == 0){
 								clearTile(cx-1, cy); allocatedBlocks++;
@@ -211,7 +214,7 @@ public class Arena {
 		
 		ArrayList<Integer> blockedMidTiles = new ArrayList<Integer>();
 		for(int j = 1; j < sizeY-1; j++){
-			if (ARENA_MAP[sizeX-1][j][1] == 1){
+			if (arena_map[sizeX-1][j][1] == 1){
 				blockedMidTiles.add(j);
 			}
 		}
@@ -220,9 +223,9 @@ public class Arena {
 			int extraEntries = rng.nextInt(blockedMidTiles.size());
 			while(extraEntries > 0 && blockedMidTiles.size() != 0){
 				int mt = rng.nextInt(blockedMidTiles.size());
-				if(ARENA_MAP[sizeX-2][blockedMidTiles.get(mt)][1] == 0 || ARENA_MAP[sizeX-2][blockedMidTiles.get(mt)-1][1] == 0 || ARENA_MAP[sizeX-2][blockedMidTiles.get(mt)+1][1] == 0){
+				if(arena_map[sizeX-2][blockedMidTiles.get(mt)][1] == 0 || arena_map[sizeX-2][blockedMidTiles.get(mt)-1][1] == 0 || arena_map[sizeX-2][blockedMidTiles.get(mt)+1][1] == 0){
 					for (int k = 0; k < 5; k++){
-						ARENA_MAP[sizeX-1][blockedMidTiles.get(mt)][k] = 0;
+						arena_map[sizeX-1][blockedMidTiles.get(mt)][k] = 0;
 					}
 					blockedMidTiles.remove(mt);
 					extraEntries -= 1;
@@ -236,7 +239,7 @@ public class Arena {
 		for(int i = 0; i < sizeX; i++){
 			for(int j = 0; j < sizeY; j++){
 				for (int k = 0; k < 5; k++){
-					ARENA_MAP[Constants.WIDTH_TILES - i - 1][j][k] = ARENA_MAP[i][j][k];
+					arena_map[width_tiles - i - 1][j][k] = arena_map[i][j][k];
 				}
 			}
 		}
@@ -259,84 +262,84 @@ public class Arena {
 		}
 		// generate
 		for(int i = 0; i < amount && emptyTiles > 0; i++){
-			entityX = rng.nextInt(Constants.WIDTH_TILES);
-			entityY = rng.nextInt(Constants.HEIGHT_TILES);
+			entityX = rng.nextInt(width_tiles);
+			entityY = rng.nextInt(height_tiles);
 			
 			// Mines & Forests tiles
 			if (maxAmountIndice == 0 || maxAmountIndice == 1){
 				// look for free tile until you find one
-				while(!(ARENA_MAP[entityX][entityY][0] == 0 && ARENA_MAP[entityX][entityY][1] == 0)) {
-					entityX = rng.nextInt(Constants.WIDTH_TILES);
-					entityY = rng.nextInt(Constants.HEIGHT_TILES);
+				while(!(arena_map[entityX][entityY][0] == 0 && arena_map[entityX][entityY][1] == 0)) {
+					entityX = rng.nextInt(width_tiles);
+					entityY = rng.nextInt(height_tiles);
 				}
 			
 			// Player tiles
 			} else {
 				// look for free tile until you find one (can't be right in the middle of the map of odd width, because player and enemy castle would occupy same tile)
-				while(!(ARENA_MAP[entityX][entityY][0] == 0 && ARENA_MAP[entityX][entityY][1] == 0) || (entityX == Constants.WIDTH_TILES - entityX - 1)) {
-					entityX = rng.nextInt(Constants.WIDTH_TILES);
-					entityY = rng.nextInt(Constants.HEIGHT_TILES);
+				while(!(arena_map[entityX][entityY][0] == 0 && arena_map[entityX][entityY][1] == 0) || (entityX == width_tiles - entityX - 1)) {
+					entityX = rng.nextInt(width_tiles);
+					entityY = rng.nextInt(height_tiles);
 				}	
 			}
 			
 			// add actual tile
 			if (entityName == "MINE") {
 				int goldAmount = rng.nextInt(Constants.MAX_GENERATION_HP_VALUES[0] - Constants.MIN_GENERATION_HP_VALUES[0]) + Constants.MIN_GENERATION_HP_VALUES[0];
-				if (entityX == Constants.WIDTH_TILES - entityX - 1) {
+				if (entityX == width_tiles - entityX - 1) {
 					addGold(entityX, entityY, goldAmount);
 					emptyTiles -= 1;
 				} else {
 					addGold(entityX, entityY, goldAmount);
-					addGold(Constants.WIDTH_TILES - entityX - 1, entityY, goldAmount);
+					addGold(width_tiles - entityX - 1, entityY, goldAmount);
 					emptyTiles -= 2;
 				}
 			} else if (entityName == "FOREST") {
 				int woodAmount = rng.nextInt(Constants.MAX_GENERATION_HP_VALUES[1] - Constants.MIN_GENERATION_HP_VALUES[1]) + Constants.MIN_GENERATION_HP_VALUES[1];
-				if (entityX == Constants.WIDTH_TILES - entityX - 1) {
+				if (entityX == width_tiles - entityX - 1) {
 					addWood(entityX, entityY, woodAmount);
 					emptyTiles -= 1;
 				} else {
 					addWood(entityX, entityY, woodAmount);
-					addWood(Constants.WIDTH_TILES - entityX - 1, entityY, woodAmount);
+					addWood(width_tiles - entityX - 1, entityY, woodAmount);
 					emptyTiles -= 2;
 				}
 			} else {
 				addPlayerEntity(entityX, entityY, 1, entityName);
-				addPlayerEntity(Constants.WIDTH_TILES - entityX - 1, entityY, 2, entityName);
+				addPlayerEntity(width_tiles - entityX - 1, entityY, 2, entityName);
 			}
 		}
 		return emptyTiles;
 	}
 	
 	// =====
-    // ARENA_MAP  : 3D Array [WIDTH_TILES][HEIGHT_TILES][5]: {ownerID, entityType, tilePointer, health, ifLocked}
-    // TOOLTIPS_CHECK : 2D Array [WIDTH_TILES][HEIGHT_TILES]: 0 = tile has tooltip, 1 = doesn't have a tooltip
+    // arena_map  : 3D Array [WIDTH_TILES][HEIGHT_TILES][5]: {ownerID, entityType, tilePointer, health, ifLocked}
+    // tooltips_check : 2D Array [WIDTH_TILES][HEIGHT_TILES]: 0 = tile has tooltip, 1 = doesn't have a tooltip
 	public void initArena(Random rng) {
 		
-		//Constants.WIDTH_TILES  = rng.nextInt(40)+10; //10 - 50
-		//Constants.HEIGHT_TILES = rng.nextInt(40)+10; //10 - 50
+		//width_tiles  = rng.nextInt(40)+10; //10 - 50
+		//height_tiles = rng.nextInt(40)+10; //10 - 50
 		
 		// initialising Entity Types
 		// (name), (entityType/maxHP), (reach/attack/step), (goldCost/woodCost)
 		initEntityTypes(); // data defined in Constants.java
 		
 		// generating width and height of the map (TODO: exceed 32 x 18 map)
-		Constants.WIDTH_TILES  = rng.nextInt(Constants.MAX_WIDTH_TILES  - Constants.MIN_WIDTH_TILES)  + Constants.MIN_WIDTH_TILES;
-		Constants.HEIGHT_TILES = rng.nextInt(Constants.MAX_HEIGHT_TILES - Constants.MIN_HEIGHT_TILES) + Constants.MIN_HEIGHT_TILES;
+		width_tiles  = rng.nextInt(Constants.MAX_WIDTH_TILES  - Constants.MIN_WIDTH_TILES)  + Constants.MIN_WIDTH_TILES;
+		height_tiles = rng.nextInt(Constants.MAX_HEIGHT_TILES - Constants.MIN_HEIGHT_TILES) + Constants.MIN_HEIGHT_TILES;
 		
-		ARENA_MAP         = new int[Constants.WIDTH_TILES][Constants.HEIGHT_TILES][5];
-		ARENA_MAP_SPRITES = new Sprite[Constants.WIDTH_TILES][Constants.HEIGHT_TILES];
-		ARENA_MAP_TEXT    = new Text[Constants.WIDTH_TILES][Constants.HEIGHT_TILES];
-		TOOLTIPS_CHECK    = new int[Constants.WIDTH_TILES][Constants.HEIGHT_TILES];
+		arena_map         = new int[width_tiles][height_tiles][5];
+		arena_map_sprites = new Sprite[width_tiles][height_tiles];
+		arena_map_text    = new Text[width_tiles][height_tiles];
+		tooltips_check    = new int[width_tiles][height_tiles];
 		
-		// initialising walled ARENA_MAP for map generation
-		for (int i = 0; i < Constants.WIDTH_TILES; i++) {
-			for (int j = 0; j < Constants.HEIGHT_TILES; j++) {
-				ARENA_MAP[i][j][0] =  0;  // neutral
-				ARENA_MAP[i][j][1] =  1;  // wall
-				ARENA_MAP[i][j][2] =  0;  // not pointing
-				ARENA_MAP[i][j][3] = -1;  // unbreakable
-				ARENA_MAP[i][j][4] = -1;  // locked
+		// initialising walled arena_map for map generation
+		for (int i = 0; i < width_tiles; i++) {
+			for (int j = 0; j < height_tiles; j++) {
+				arena_map[i][j][0] =  0;  // neutral
+				arena_map[i][j][1] =  1;  // wall
+				arena_map[i][j][2] =  0;  // not pointing
+				arena_map[i][j][3] = -1;  // unbreakable
+				arena_map[i][j][4] = -1;  // locked
 			}
 		}
 		
@@ -344,9 +347,9 @@ public class Arena {
 		
 		int emptyTiles = 0;
 		// initialising all walls from the generated arena
-		for(int i = 0; i < Constants.WIDTH_TILES; i++){
-			for(int j = 0; j < Constants.HEIGHT_TILES; j++){
-				if(ARENA_MAP[i][j][0] == 0 && ARENA_MAP[i][j][1] == 1){
+		for(int i = 0; i < width_tiles; i++){
+			for(int j = 0; j < height_tiles; j++){
+				if(arena_map[i][j][0] == 0 && arena_map[i][j][1] == 1){
 					addWall(i, j, -1);
 				} else {
 					emptyTiles += 1;
@@ -364,11 +367,11 @@ public class Arena {
 		emptyTiles = generateEntities(rng, "HEAVY",    0, 6, emptyTiles);
 		emptyTiles = generateEntities(rng, "RANGED",   0, 7, emptyTiles);
 		
-		// initialising empty TOOLTIPS_CHECK
+		// initialising empty tooltips_check
 		initTooltipsChecks();
 		
 		// =====
-        // initialising starting scenario on ARENA_MAP
+        // initialising starting scenario on arena_map
         //InputStream intext = ClassLoader.getSystemResourceAsStream("arena0etypes.txt");
         //String[] result = new BufferedReader(new InputStreamReader(intext)).lines().parallel().collect(Collectors.joining("\n")).split(",");
         //LinkedList<Integer> dataETypes = new LinkedList<Integer>();
@@ -384,8 +387,8 @@ public class Arena {
 		
 		// first lines then tiles (first pick row, then pick column)
 		//int tempE, tempH;
-		//for (int j = 0; j < Constants.HEIGHT_TILES; j++){
-		//	for (int i = 0; i < Constants.WIDTH_TILES; i++){
+		//for (int j = 0; j < height_tiles; j++){
+		//	for (int i = 0; i < width_tiles; i++){
 		//		tempE = dataETypes.getFirst();
 		//		tempH = dataHealth.getFirst();
 		//		// add wall
@@ -415,17 +418,17 @@ public class Arena {
 			p.initMaterial("WOOD", 0);
 		}
 		
-		// initialising graphical representation of ARENA_MAP
+		// initialising graphical representation of arena_map
 		initGraphicArena();
 	}
 	
 	private void addToArena(int x, int y, int ownerID, int entityType, int health) {
-		ARENA_MAP[x][y][0] = ownerID;
-		ARENA_MAP[x][y][1] = entityType;
-		ARENA_MAP[x][y][2] = 0;
-		ARENA_MAP[x][y][3] = health;
-		ARENA_MAP[x][y][4] = -1;
-		ENTITY_LIST.add(new RTSEntity(x, y));
+		arena_map[x][y][0] = ownerID;
+		arena_map[x][y][1] = entityType;
+		arena_map[x][y][2] = 0;
+		arena_map[x][y][3] = health;
+		arena_map[x][y][4] = -1;
+		entity_list.add(new RTSEntity(x, y));
 	}
 	// ==========
 	// (int x, int y, int ownerID, int entityType, int health)
@@ -439,7 +442,7 @@ public class Arena {
 		addToArena(x, y, 0, 3, health);
 	}
 	public void addPlayerEntity(int x, int y, int ownerID, String entityTypeName) {
-		addToArena(x, y, ownerID, ENTITY_TYPES.get(entityTypeName)[0], ENTITY_TYPES.get(entityTypeName)[1]);
+		addToArena(x, y, ownerID, entity_types.get(entityTypeName)[0], entity_types.get(entityTypeName)[1]);
 	}
 	
 	// adding a tooltip to an entity
@@ -476,18 +479,18 @@ public class Arena {
 	}
 	
 	// =====
-    // initialising graphical representation of ARENA_MAP
+    // initialising graphical representation of arena_map
     public void initGraphicArena(){
-		paddingL = (32 - Constants.WIDTH_TILES)  * 30;
-		paddingT = (18 - Constants.HEIGHT_TILES) * 30;
+		paddingL = (32 - width_tiles)  * 30;
+		paddingT = (18 - height_tiles) * 30;
 		
-		if (Constants.WIDTH_TILES % 2 == 1 && Constants.HEIGHT_TILES % 2 == 1) {
+		if (width_tiles % 2 == 1 && height_tiles % 2 == 1) {
 			graphicEntityModule.createSprite().setImage("empty-arena-LT.png").setAnchor(0);
 			
-		} else if (Constants.WIDTH_TILES % 2 == 1) {
+		} else if (width_tiles % 2 == 1) {
 			graphicEntityModule.createSprite().setImage("empty-arena-L.png").setAnchor(0);
 			
-		} else if (Constants.HEIGHT_TILES % 2 == 1) {
+		} else if (height_tiles % 2 == 1) {
 			graphicEntityModule.createSprite().setImage("empty-arena-T.png").setAnchor(0);
 			
 		} else {
@@ -497,33 +500,33 @@ public class Arena {
         
         
         // draw initial map
-        for (int i = 0; i < Constants.WIDTH_TILES; i++) {
-			for (int j = 0; j < Constants.HEIGHT_TILES; j++) {
+        for (int i = 0; i < width_tiles; i++) {
+			for (int j = 0; j < height_tiles; j++) {
 				String tile_filename = "0-0.png", tile_health = "";
 				int font_size = 30;
 				double di = Double.valueOf(i), dj = Double.valueOf(j), dt = Double.valueOf(Constants.TILE_SIZE);
-				if (ARENA_MAP[i][j][2] == 0){
-					tile_filename = String.format("%d-%d.png", ARENA_MAP[i][j][0], ARENA_MAP[i][j][1]);
+				if (arena_map[i][j][2] == 0){
+					tile_filename = String.format("%d-%d.png", arena_map[i][j][0], arena_map[i][j][1]);
 					// non-empty entity
-					if (ARENA_MAP[i][j][0] != 0 || ARENA_MAP[i][j][1] == 2 || ARENA_MAP[i][j][1] == 3){
+					if (arena_map[i][j][0] != 0 || arena_map[i][j][1] == 2 || arena_map[i][j][1] == 3){
 						// unbreakable/infinite entity
-						if (ARENA_MAP[i][j][3] == -1) {
+						if (arena_map[i][j][3] == -1) {
 							tile_health = "∞";
 							font_size   = 50;
 						// normal entity
 						} else {
-							tile_health = String.valueOf(ARENA_MAP[i][j][3]);
+							tile_health = String.valueOf(arena_map[i][j][3]);
 						}
 					}
 				}
 				
-				ARENA_MAP_SPRITES[i][j] = graphicEntityModule.createSprite()
+				arena_map_sprites[i][j] = graphicEntityModule.createSprite()
 						.setImage(tile_filename)
 						.setAnchorX(0)
 						.setAnchorY(0)
 						.setX((int)(di * dt) + paddingL)
 						.setY((int)(dj * dt) + paddingT);
-				ARENA_MAP_TEXT[i][j] = graphicEntityModule.createText()
+				arena_map_text[i][j] = graphicEntityModule.createText()
 						.setText(tile_health)
 						.setX((int)((di+0.5) * dt)  + paddingL)
 						.setY((int)((dj+0.75) * dt) + paddingT)
@@ -539,10 +542,10 @@ public class Arena {
 	}
 	
 	public void initTooltipsChecks(){
-		// initialising empty ARENA_MAP and empty TOOLTIPS_CHECK
-		for (int i = 0; i < Constants.WIDTH_TILES; i++) {
-			for (int j = 0; j < Constants.HEIGHT_TILES; j++) {
-				TOOLTIPS_CHECK[i][j] = 0;
+		// initialising empty arena_map and empty tooltips_check
+		for (int i = 0; i < width_tiles; i++) {
+			for (int j = 0; j < height_tiles; j++) {
+				tooltips_check[i][j] = 0;
 			}
 		}
 	}
@@ -551,30 +554,30 @@ public class Arena {
 	// get values
 	// ==============
 	public int[][][] getMap(){
-		return ARENA_MAP;
+		return arena_map;
 	}
 	public int[] getTile(int i, int j){
-		return ARENA_MAP[i][j];
+		return arena_map[i][j];
 	}
 	public int getTileValue(int i, int j, int k){
-		return ARENA_MAP[i][j][k];
+		return arena_map[i][j][k];
 	}
 	
 	// ownerID, entityType, tilePointer, health, ifLocked
 	public int getTileOwner(int i, int j){
-		return ARENA_MAP[i][j][0];
+		return arena_map[i][j][0];
 	}
 	public int getTileType(int i, int j){
-		return ARENA_MAP[i][j][1];
+		return arena_map[i][j][1];
 	}
 	public int getTilePointer(int i, int j){
-		return ARENA_MAP[i][j][2];
+		return arena_map[i][j][2];
 	}
 	public int getTileHealth(int i, int j){
-		return ARENA_MAP[i][j][3];
+		return arena_map[i][j][3];
 	}
 	public int getTileLockStatus(int i, int j){
-		return ARENA_MAP[i][j][4];
+		return arena_map[i][j][4];
 	}
 	// ==============
 	public int getTileMaxHP(int i, int j){
@@ -611,87 +614,87 @@ public class Arena {
 	
 	// ==============
 	public HashMap<String, int[]> getETypes(){
-		return ENTITY_TYPES;
+		return entity_types;
 	}
 	public int[] getEType(int tileType){
-		return ENTITY_TYPES.get(Constants.ENTITY_TYPES_NAMES[tileType]);
+		return entity_types.get(Constants.ENTITY_TYPES_NAMES[tileType]);
 	}
 	public int[] getTileEType(int i, int j){
 		return getEType(getTileType(i,j));
 	}
 	public ArrayList<RTSEntity> getEntities(){
-		return ENTITY_LIST;
+		return entity_list;
 	}
 	
 	// ==============
 	public Sprite[][] getSpritesMap(){
-		return ARENA_MAP_SPRITES;
+		return arena_map_sprites;
 	}
 	public Sprite getTileSprite(int i, int j){
-		return ARENA_MAP_SPRITES[i][j];
+		return arena_map_sprites[i][j];
 	}
 	
 	// ==============
 	public Text[][] getTextMap(){
-		return ARENA_MAP_TEXT;
+		return arena_map_text;
 	}
 	public String getTileTextValue(int i, int j){
-		return ARENA_MAP_TEXT[i][j].getText();
+		return arena_map_text[i][j].getText();
 	}
 	
 	// ==============
 	public int[][] getTooltipChecks(){
-		return TOOLTIPS_CHECK;
+		return tooltips_check;
 	}
 	public int getTileTooltipCheck(int i, int j){
-		return TOOLTIPS_CHECK[i][j];
+		return tooltips_check[i][j];
 	}
 	
 	// ==============
 	// set values
 	// ==============
 	public void setTileValue(int i, int j, int k, int value){
-		ARENA_MAP[i][j][k] = value;
+		arena_map[i][j][k] = value;
 	}
 	public void setTileLockStatus(int i, int j, int value){
-		ARENA_MAP[i][j][4] = value;
+		arena_map[i][j][4] = value;
 	}
 	public void raiseTileLockStatus(int i, int j){
-		ARENA_MAP[i][j][4] += 1;
+		arena_map[i][j][4] += 1;
 	}
 	// ==============
 	public void harvestTile(int i, int j){
-		ARENA_MAP[i][j][3] -= 1;
+		arena_map[i][j][3] -= 1;
 	}
 	public void attackTile(int i, int j, int value){
-		ARENA_MAP[i][j][3] -= value;
+		arena_map[i][j][3] -= value;
 	}
 	
 	// ==============
 	public Sprite setTileSpriteVisible(int i, int j, String text){
-		return ARENA_MAP_SPRITES[i][j].setImage(text).setVisible(true);
+		return arena_map_sprites[i][j].setImage(text).setVisible(true);
 	}
 	public Sprite setTileSpriteInvisible(int i, int j, String text){
-		return ARENA_MAP_SPRITES[i][j].setImage(text).setVisible(false);
+		return arena_map_sprites[i][j].setImage(text).setVisible(false);
 	}
 	public void setTileSprite(int i, int j, String text){
-		ARENA_MAP_SPRITES[i][j].setImage(text);
+		arena_map_sprites[i][j].setImage(text);
 	}
 	public void setTileVisible(int i, int j){
-		ARENA_MAP_SPRITES[i][j].setVisible(true);
+		arena_map_sprites[i][j].setVisible(true);
 	}
 	public void setTileInvisible(int i, int j){
-		ARENA_MAP_SPRITES[i][j].setVisible(false);
+		arena_map_sprites[i][j].setVisible(false);
 	}
 	
 	// ==============
 	public Text setTileText(int i, int j, String text, int x, int y, int fontsize){
-		return ARENA_MAP_TEXT[i][j].setText(text).setX(x + paddingL).setY(y + paddingT).setFontSize(fontsize);
+		return arena_map_text[i][j].setText(text).setX(x + paddingL).setY(y + paddingT).setFontSize(fontsize);
 	}
 	
 	// ==============
 	public void setTileTooltipCheck(int i, int j, int value){
-		TOOLTIPS_CHECK[i][j] = value;
+		tooltips_check[i][j] = value;
 	}
 	
 	// ==============
@@ -716,7 +719,7 @@ public class Arena {
 		return getTileOwner(i,j) == 0;
 	}
 	public boolean checkTileOwnership(int i, int j, int owner){
-		return ARENA_MAP[i][j][0] == owner;
+		return arena_map[i][j][0] == owner;
 	}
 	
 	// ==============
@@ -731,8 +734,8 @@ public class Arena {
 	
 	// Finds and returns indice of entity that is present at those coordinates.
 	public int findRTSEntity (int coordx, int coordy){
-		for (int i = 0; i < ENTITY_LIST.size(); i++) {
-			if (ENTITY_LIST.get(i).x == coordx && ENTITY_LIST.get(i).y == coordy){
+		for (int i = 0; i < entity_list.size(); i++) {
+			if (entity_list.get(i).x == coordx && entity_list.get(i).y == coordy){
 				return i;
 			}
 		}
@@ -742,16 +745,16 @@ public class Arena {
 	// ==============
 	public void cleanupDead() {
 		ArrayList<RTSEntity> cleanedList = new ArrayList<RTSEntity>();
-		for (RTSEntity e : ENTITY_LIST) {
+		for (RTSEntity e : entity_list) {
 			int x = e.x, y = e.y;
 			// check if health == 0
-			if (ARENA_MAP[x][y][3] == 0) {
-				ARENA_MAP[x][y][0] = 0; ARENA_MAP[x][y][1] = 0;
-				ARENA_MAP[x][y][2] = 0; ARENA_MAP[x][y][4] = 0;
+			if (arena_map[x][y][3] == 0) {
+				arena_map[x][y][0] = 0; arena_map[x][y][1] = 0;
+				arena_map[x][y][2] = 0; arena_map[x][y][4] = 0;
 			} else {
 				cleanedList.add(e);
 			}
 		}
-		ENTITY_LIST = new ArrayList<RTSEntity>(cleanedList);
+		entity_list = new ArrayList<RTSEntity>(cleanedList);
 	}
 }

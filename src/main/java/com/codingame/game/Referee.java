@@ -44,7 +44,7 @@ public class Referee extends AbstractReferee {
         for (Player p : gameManager.getActivePlayers()) {
 			// SEND ENTITY_TYPE DATA:
 			// entityType, maxHP, reach, attack, step, goldCost, woodCost
-			p.sendInputLine(String.format("%d %d", Constants.WIDTH_TILES, Constants.HEIGHT_TILES));
+			p.sendInputLine(String.format("%d %d", arena.width_tiles, arena.height_tiles));
 				
 			for (int i = 0; i < Constants.ENTITY_TYPES_NAMES.length; i++) {
 				int [] temp_etype_array = arena.getETypes().get(Constants.ENTITY_TYPES_NAMES[i]).clone();
@@ -63,8 +63,8 @@ public class Referee extends AbstractReferee {
         for (Player p : gameManager.getActivePlayers()) {
 			// SEND arena DATA:
 			p.sendInputLine(String.format("%d %d %d %d %d", arena.getEntities().size(), p.gold(), p.wood(), gameManager.getPlayer((p.getIndex()+1) % 2).gold(), gameManager.getPlayer((p.getIndex()+1) % 2).wood()));
-			for (int i = 0; i < Constants.WIDTH_TILES; i++) {
-				for (int j = 0; j < Constants.HEIGHT_TILES; j++) {
+			for (int i = 0; i < arena.width_tiles; i++) {
+				for (int j = 0; j < arena.height_tiles; j++) {
 					// x | y | ownerID (-1:neutral,0:player1,1:player2) | entityType (empty, gold, worker, castle, etc.) | health
 					if (!arena.isTileEmpty(i,j)) {
 						String inputText = "";
@@ -82,9 +82,9 @@ public class Referee extends AbstractReferee {
         }
     }
     private void printArena() {
-		for (int i = 0; i < Constants.WIDTH_TILES; i++) {
-			for (int j = 0; j < Constants.HEIGHT_TILES; j++) {
-				//arena_MAP[i][j] = (ownerID, entityType, tilePointer, health,  ifLocked
+		for (int i = 0; i < arena.width_tiles; i++) {
+			for (int j = 0; j < arena.height_tiles; j++) {
+				//arena_map[i][j] = (ownerID, entityType, tilePointer, health,  ifLocked
 				String tile_filename = "0-0.png", tile_health = String.valueOf(arena.getTileHealth(i,j));
 				int tile_fontsize = 30;
 				
@@ -181,7 +181,7 @@ public class Referee extends AbstractReferee {
 	}
 	// Checks if coordinates are in arena bounds
     private boolean checkIfInBounds(int x, int y) {
-		return 0 <= x && x < Constants.WIDTH_TILES && 0 <= y && y < Constants.HEIGHT_TILES;
+		return 0 <= x && x < arena.width_tiles && 0 <= y && y < arena.height_tiles;
 	}
 	// Checks if there is mine/forest at those coordinates
 	private boolean checkIfHarvestable(int x, int y) {
@@ -465,9 +465,9 @@ public class Referee extends AbstractReferee {
 						
 		// xy: 0 - block, 1 - block build, 2 - build, 3 - block train, 4 - train, 5 - block move, 6 - move, 7 - none 
 		// (if there is event of higher priority - dont do others - put block if there is one on the same priority)
-		int [][] orderConflictArray = new int[Constants.WIDTH_TILES][Constants.HEIGHT_TILES];
-		for (int i = 0; i < Constants.WIDTH_TILES; i++){
-			for(int j = 0; j < Constants.HEIGHT_TILES; j++){
+		int [][] orderConflictArray = new int[arena.width_tiles][arena.height_tiles];
+		for (int i = 0; i < arena.width_tiles; i++){
+			for(int j = 0; j < arena.height_tiles; j++){
 				orderConflictArray[i][j] = 7;
 			}
 		}
@@ -736,8 +736,8 @@ public class Referee extends AbstractReferee {
 	
 	// updating all Tooltips
 	private void updateTooltips() {
-		for (int i = 0; i < Constants.WIDTH_TILES; i++) {
-			for (int j = 0; j < Constants.HEIGHT_TILES; j++) {
+		for (int i = 0; i < arena.width_tiles; i++) {
+			for (int j = 0; j < arena.height_tiles; j++) {
 				
 				// EMPTY TILE or WALL
 				if (arena.isTileEmpty(i,j) || arena.isTileWall(i,j)) {
@@ -771,6 +771,35 @@ public class Referee extends AbstractReferee {
 			if (numberOfCastles == 0) {
 				p.deactivate(gameManager.getPlayer(p.getIndex()).getNicknameToken() + " has no remaining castles!");
 				gameManager.addToGameSummary(p.getNicknameToken() + " has no remaining castles!");
+			}
+		}
+	}
+	
+	// checking which remaining player has higher score
+    private void checkRemainingScores() {
+		int maxMatsScore = 0;
+		for (Player p : gameManager.getActivePlayers()) {
+			int numberOfMaterials = 0;
+			for (RTSEntity e : arena.getEntities()) {
+				int x = Integer.valueOf(e.x), y = Integer.valueOf(e.y);
+				// check if entity is player's
+				if (arena.getTileOwner(x,y) == (p.getIndex() + 1)) {
+					numberOfMaterials += arena.getTileEType(x,y)[5];
+					numberOfMaterials += arena.getTileEType(x,y)[6];
+				}
+			}
+			numberOfMaterials += p.gold();
+			numberOfMaterials += p.wood();
+			p.setmatScore(numberOfMaterials);
+			
+			if (numberOfMaterials > maxMatsScore){
+				maxMatsScore = numberOfMaterials;
+			}
+		}
+		for (Player p : gameManager.getActivePlayers()) {
+			if (maxMatsScore > p.getmatScore()){
+				p.deactivate(gameManager.getPlayer(p.getIndex()).getNicknameToken() + " has worse final score!");
+				gameManager.addToGameSummary(p.getNicknameToken() + " has worse final score!");
 			}
 		}
 	}
@@ -813,9 +842,10 @@ public class Referee extends AbstractReferee {
         // RuntimeException
         if (turn == Constants.MAX_TURNS) {
 			for (Player p : gameManager.getActivePlayers()) {
-				p.deactivate(p.getNicknameToken() + " exceeded turn limit.");
 				gameManager.addToGameSummary(p.getNicknameToken() + " exceeded turn limit.");
 			}
+			// catching end-conditions
+			checkRemainingScores();
 		}
         
         if (gameManager.getActivePlayers().size() < 2) {
@@ -830,7 +860,7 @@ public class Referee extends AbstractReferee {
     }
 
     @Override
-    public void onEnd() {
+    public void onEnd() {        
         for (Player p : gameManager.getPlayers()) {
             p.setScore(p.isActive() ? 1 : 0);
         }
