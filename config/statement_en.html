@@ -145,6 +145,35 @@
 		  </div>
 	  </div>
   </div>
+  
+	<!-- Victory conditions -->
+  <div class="statement-victory-conditions">
+      <div class="icon victory"></div>
+      <div class="blk">
+          <div class="title">Victory Conditions</div>
+          <div class="text">
+              <ul style="padding-bottom: 0;">
+                  <li>You destroyed all of the opponent's castles.</li>
+              </ul>
+          </div>
+      </div>
+  </div>
+
+  <!-- Lose conditions -->
+  <div class="statement-lose-conditions">
+      <div class="icon lose"></div>
+      <div class="blk">
+          <div class="title">Loss Conditions</div>
+          <div class="text">
+              <ul style="padding-bottom: 0;">
+                  <li>You lost all of your castles.</li>
+                  <li>You didn't provide a valid order in time.</li>
+                  <li>You exceeded 250 turns limit.</li>
+              </ul>
+          </div>
+      </div>
+  </div>
+  <br>
 
   <!-- PROTOCOL -->
   <div class="statement-section statement-protocol">
@@ -194,35 +223,41 @@
 			<li><var>x</var> - x position of the entity.</li>
 			<li><var>y</var> - y position of the entity.</li>
 			<li><var>owner</var> - identifier for the owner of the entity:
-				<div style="list-style-type: none;">
-					<ul>
-						<li><const>-1:</const> neutral.</li>
-						<li><const>0:</const> player.</li>
-						<li><const>1:</const> enemy.</li>
-					</ul>
+				<div style="padding-left: 40px">
+					<const>-1:</const> neutral.
+					<br>
+					<const>0:</const> player.
+					<br>
+					<const>1:</const> enemy.
+					<br>
 				</div>
 			</li>
 			<li><var>entityType</var> - numerical value representing entity type:
 				<ul>
 					<li>Neutral entities:
-						<div style="list-style-type: square;">
-							<ul>
-								<li><const>1:</const> wall.</li>
-								<li><const>2:</const> gold mine.</li>
-								<li><const>3:</const> forest.</li>
-							</ul>
+						<div style="padding-left: 40px">
+							<const>1:</const> wall.
+							<br>
+							<const>2:</const> gold mine.
+							<br>
+							<const>3:</const> forest.
+							<br>
 						</div>
 					</li>
 					<li>Player and enemy entities:
-						<div style="list-style-type: square;">
-							<ul>
-								<li><const>0:</const> castle.</li>
-								<li><const>1:</const> barracks.</li>
-								<li><const>2:</const> worker.</li>
-								<li><const>3:</const> light.</li>
-								<li><const>4:</const> heavy.</li>
-								<li><const>5:</const> ranged.</li>
-							</ul>
+						<div style="padding-left: 40px">
+							<const>0:</const> castle.
+							<br>
+							<const>1:</const> barracks.
+							<br>
+							<const>2:</const> worker.
+							<br>
+							<const>3:</const> light.
+							<br>
+							<const>4:</const> heavy.
+							<br>
+							<const>5:</const> ranged.
+							<br>
 						</div>
 					</li>
 				</ul>
@@ -265,15 +300,11 @@
     <div class="blk">
 		<div class="title">Constraints</div>
 		<div class="text">
-			0 ≤ X &lt; <var>width</var>
-			<br>
-			0 ≤ Y &lt; <var>height</var>
-			<br>
 			Response time for first turn ≤ <const>1</const> s
 			<br> 
 			Response time for one turn ≤ <const>50</const> ms
 			<br> 
-			Turn limit is <const>200</const>.
+			Turn limit is <const>250</const>.
 		</div>
 	</div>
   </div>
